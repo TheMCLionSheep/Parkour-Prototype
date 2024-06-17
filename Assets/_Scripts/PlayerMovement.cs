@@ -19,20 +19,22 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float groundDist = 0.01f;
     [SerializeField] private float maxWalkingAngle = 60f;
     [SerializeField] private float anglePower = 0.5f;
+
     [SerializeField] private float jumpPower = 7f;
     [SerializeField] private Vector2 divePower = new Vector2(5, 5);
-    [SerializeField] private Vector2 jumpDivePower = new Vector2(5, 8);
-    [SerializeField] private float divingJumpPower = 3f;
-    [SerializeField] private Vector2 divingDivePower = new Vector2(5, 2);
-    [SerializeField] private Vector2 divingJumpDivePower = new Vector2(5, 3);
+    [SerializeField] private Vector2 jumpDivePower = new Vector2(5, 7);
+    [SerializeField] private Vector2 divingJumpPower = new Vector2(5, 7);
+
     [SerializeField] private float chainActionBuffer = 0.05f;
     [SerializeField] private float coyoteTime = 0.05f;
     [SerializeField] private float jumpBufferTime = 0.05f;
     [SerializeField] private float reuseDelay = 0.1f;
+
+    [SerializeField] private float ragdollControlSpeed = 5f;
+
     [SerializeField] private float diveAngleSpeed = 10f;
     [SerializeField] private float maxDiveAngle = 90f;
     [SerializeField] private float maxDiveCameraAngle = 45f;
-
     [SerializeField] private float armLength = 0.5f;
 
     [SerializeField] private float anchorOffset = -1.5f;
@@ -44,10 +46,12 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private float gravity;
     [SerializeField] private float diveDrag;
+    [SerializeField] private float ragdollDrag;
 
     [SerializeField] private Transform playerCamera;
     [SerializeField] private Transform playerBody;
     [SerializeField] private Transform playerModel;
+    [SerializeField] private GameObject playerRagdollCamera;
 
     private Vector2 cameraAngle;
     private float diveAngle = 0f;
@@ -58,6 +62,7 @@ public class PlayerMovement : MonoBehaviour
     private float timeSinceDivePressed = Mathf.Infinity;
     private float timeSinceOnGround = 0f;
     private float timeSinceDiveReady = Mathf.Infinity;
+    private float timeInRagdoll = 0f;
 
     private bool pressingDive = false;
     private bool diving = false;
@@ -66,7 +71,7 @@ public class PlayerMovement : MonoBehaviour
     private float verticalVelocity;
     private Vector2 horizontalRunVelocity;
     private Vector2 diveVelocity;
-    private Vector2 slideVelocity;
+    private Vector2 ragdollVelocity;
     
     private PlayerInput playerInput;
     private InputAction moveAction;
@@ -136,9 +141,11 @@ public class PlayerMovement : MonoBehaviour
         Vector2 playerMove = moveAction.ReadValue<Vector2>();
 
         // Calculate new camera angle based on change
-        cameraAngle.x += -lookDelta.y * mouseSensitivity;
-        cameraAngle.y += lookDelta.x * mouseSensitivity;
-
+        if (!ragdoll)
+        {
+            cameraAngle.x += -lookDelta.y * mouseSensitivity;
+            cameraAngle.y += lookDelta.x * mouseSensitivity;
+        }
 
         // Clamp max up and down angle
         cameraAngle.x = Mathf.Clamp(cameraAngle.x, minPitch, maxPitch);
@@ -164,7 +171,13 @@ public class PlayerMovement : MonoBehaviour
         {
             verticalVelocity = 0;
             timeSinceOnGround = 0f;
-            
+            if (diving && !ragdoll)
+            {
+                ragdoll = true;
+                ragdollVelocity = horizontalRunVelocity + diveVelocity;
+                playerCamera.gameObject.SetActive(false);
+                playerRagdollCamera.SetActive(true);
+            }
         }
 
         HandleJumpDive(viewYaw * Vector2.up);
@@ -188,9 +201,27 @@ public class PlayerMovement : MonoBehaviour
                 horizontalRunVelocity = horizontalRunVelocity.normalized * maxSpeed;
             }
         }
+        Vector3 movement;
 
-        // The resultant movement is a combination of the run movement (controlled by keys), and diving velocity.
-        Vector3 movement = new Vector3(horizontalRunVelocity.x + diveVelocity.x, 0f, horizontalRunVelocity.y + diveVelocity.y);
+        if (!ragdoll)
+        {
+            // The resultant movement is a combination of the run movement (controlled by keys), and diving velocity.
+            movement = new Vector3(horizontalRunVelocity.x + diveVelocity.x, 0f, horizontalRunVelocity.y + diveVelocity.y);            
+        }
+        else
+        {
+            // Apply a constant stopping velocity to the player's slide movement to slow the player down.
+            Vector2 slideStopVelocity = -ragdollVelocity * ragdollDrag * Time.deltaTime;
+            if (slideStopVelocity.magnitude > ragdollVelocity.magnitude) // If the deceleration will cause the player to change velocity to negative, set to 0
+            {
+                ragdollVelocity = Vector2.zero;
+            }
+            else {
+                ragdollVelocity += slideStopVelocity;
+            }
+
+            movement = new Vector3(ragdollVelocity.x, 0f, ragdollVelocity.y);
+        }
 
         transform.position = MovePlayer(movement * Time.deltaTime);
         transform.position = MovePlayer(verticalVelocity * Time.deltaTime * Vector3.up);
@@ -236,21 +267,13 @@ public class PlayerMovement : MonoBehaviour
             else if (attemptingJump && diving && timeSinceDive > chainActionBuffer && timeSinceDiveReady <= coyoteTime)
             {
                 // If you pressed the jump button while diving, and there's an obstacle, apply diving jump force
-                verticalVelocity += divingJumpPower;
+                verticalVelocity += divingJumpPower.y;
+                diveVelocity += diveDirection * divingJumpPower.x;
                 timeSinceJump = 0;
                 timeSinceJumpPressed = Mathf.Infinity;
 
                 Debug.Log("Jump while diving");
             }
-            // else if (attemptingJump && diving && timeSinceDive <= chainActionBuffer && timeSinceDiveReady <= chainActionBuffer + coyoteTime)
-            // {
-            //     // If you pressed jump right after a diving dive, apply diving jump force.
-            //     verticalVelocity += divingJumpDivePower.y - divingDivePower.y;
-            //     timeSinceJump = 0;
-            //     timeSinceJumpPressed = Mathf.Infinity;
-                
-            //     Debug.Log("Jump chain dive while diving!");
-            // }
 
             bool attemptingDive = timeSinceDivePressed <= jumpBufferTime;
             
@@ -276,27 +299,17 @@ public class PlayerMovement : MonoBehaviour
             }
 
             diving = pressingDive;
+        } else {
+            // If player hit jump within the buffer window, attempting jump
+            bool attemptingJump = timeSinceJumpPressed <= jumpBufferTime;
 
-            // else if (attemptingDive && diving && timeSinceJump > chainActionBuffer && timeSinceDiveReady <= coyoteTime)
-            // {
-            //     // If you pressed the dive button while diving, and there's an obstacle, apply diving dive force
-            //     verticalVelocity += divingDivePower.y;
-            //     diveVelocity += diveDirection * divingDivePower.x;
-            //     timeSinceDive = 0;
-            //     timeSinceDivePressed = Mathf.Infinity;
-
-            //     Debug.Log("Dive while diving!");
-            // }
-            // else if (attemptingDive && !diving && timeSinceJump <= chainActionBuffer && timeSinceDiveReady <= chainActionBuffer + coyoteTime)
-            // {
-            //     // If you pressed the dive button while diving, and there's an obstacle, apply diving dive force
-            //     verticalVelocity += divingJumpDivePower.y - divingJumpPower;
-            //     diveVelocity += diveDirection * divingDivePower.x;
-            //     timeSinceDive = 0;
-            //     timeSinceDivePressed = Mathf.Infinity;
-
-            //     Debug.Log("Dive chain jump while diving!");
-            // }
+            if (attemptingJump && ragdollVelocity.magnitude < ragdollControlSpeed)
+            {
+                ragdoll = false;
+                diving = false;
+                playerCamera.gameObject.SetActive(true);
+                playerRagdollCamera.SetActive(false);
+            }
         }
 
         // If you have dived, change the hitbox
