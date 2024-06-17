@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.Assertions.Comparers;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(CapsuleCollider))]
 public class PlayerMovement : MonoBehaviour
 {
     public const float minPitch = -90f;
@@ -31,10 +30,15 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float jumpBufferTime = 0.05f;
     [SerializeField] private float reuseDelay = 0.1f;
     [SerializeField] private float diveAngleSpeed = 10f;
-    [SerializeField] private float maxDiveAngle = 80f;
+    [SerializeField] private float maxDiveAngle = 90f;
+    [SerializeField] private float maxDiveCameraAngle = 45f;
 
-    [SerializeField] private float armHeight = 0.5f;
     [SerializeField] private float armLength = 0.5f;
+
+    [SerializeField] private float anchorOffset = -1.5f;
+    [SerializeField] private float fullHeight = 2f;
+    [SerializeField] private float tuckedHeight = 1f;
+    [SerializeField] private float standupSpeed = 0.5f;
 
     [SerializeField] private int maxBounces = 5;
 
@@ -42,9 +46,11 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float diveDrag;
 
     [SerializeField] private Transform playerCamera;
+    [SerializeField] private Transform playerBody;
+    [SerializeField] private Transform playerModel;
 
     private Vector2 cameraAngle;
-    private float diveAngle = 0f; 
+    private float diveAngle = 0f;
 
     private float timeSinceJump = Mathf.Infinity;
     private float timeSinceDive = Mathf.Infinity;
@@ -60,6 +66,7 @@ public class PlayerMovement : MonoBehaviour
     private float verticalVelocity;
     private Vector2 horizontalRunVelocity;
     private Vector2 diveVelocity;
+    private Vector2 slideVelocity;
     
     private PlayerInput playerInput;
     private InputAction moveAction;
@@ -74,7 +81,7 @@ public class PlayerMovement : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         playerInput = GetComponent<PlayerInput>();
-        capsuleCollider = GetComponent<CapsuleCollider>();
+        capsuleCollider = playerBody.GetComponent<CapsuleCollider>();
 
         lookAction = playerInput.actions.FindAction("Look");
         moveAction = playerInput.actions.FindAction("Move");
@@ -138,6 +145,7 @@ public class PlayerMovement : MonoBehaviour
 
         // Rotate the camera based on y movement
         playerCamera.localRotation = Quaternion.Euler(cameraAngle.x, 0f, 0f);
+        transform.rotation = Quaternion.Euler(0f, cameraAngle.y, 0f);
         
         var moveDirection = new Vector3(playerMove.x, 0, playerMove.y);
 
@@ -156,11 +164,7 @@ public class PlayerMovement : MonoBehaviour
         {
             verticalVelocity = 0;
             timeSinceOnGround = 0f;
-        }
-
-        if (Input.GetKeyDown(KeyCode.E)) // Debug, get out of ragdoll
-        {
-            ragdoll = false;
+            
         }
 
         HandleJumpDive(viewYaw * Vector2.up);
@@ -294,6 +298,29 @@ public class PlayerMovement : MonoBehaviour
             //     Debug.Log("Dive chain jump while diving!");
             // }
         }
+
+        // If you have dived, change the hitbox
+        if (diving)
+        {
+            capsuleCollider.height = tuckedHeight;
+            capsuleCollider.center = new Vector3(0f, anchorOffset + (fullHeight + fullHeight - tuckedHeight) / 2, 0f);
+        }
+        else
+        {
+            // How much the capsule will get taller this frame
+            float heightChange = Mathf.Min(standupSpeed * Time.deltaTime, fullHeight - capsuleCollider.height);
+
+            // Check if we will hit the ground with this height change
+            RaycastHit groundHit;
+            if (CastSelf(transform.position, transform.rotation, Vector3.down, heightChange, out groundHit))
+            {
+                // Move upward if we would grow into the ground.
+                transform.position += new Vector3(0f, heightChange + groundDist - groundHit.distance, 0f);
+            }
+
+            capsuleCollider.height += heightChange;
+            capsuleCollider.center = new Vector3(0f, anchorOffset + (fullHeight + fullHeight - capsuleCollider.height) / 2, 0f);
+        }
         
         // If you are diving, rotate into diving position, else, move back upright.
         if (diving)
@@ -319,7 +346,8 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Rotate the player based on diving angle
-        transform.rotation = Quaternion.Euler(diveAngle, cameraAngle.y, 0f);
+        playerCamera.parent.localRotation = Quaternion.Euler(Mathf.Clamp(diveAngle, 0f, maxDiveCameraAngle), 0f, 0f);
+        playerModel.localRotation = Quaternion.Euler(diveAngle, 0f, 0f);
 
         // Add time to each time reference variable
         timeSinceJump += Time.deltaTime;
@@ -414,7 +442,9 @@ public class PlayerMovement : MonoBehaviour
     public bool CastSelf(Vector3 pos, Quaternion rot, Vector3 dir, float dist, out RaycastHit hit)
     {
         // Get Parameters associated with the KCC
-        Vector3 center = rot * capsuleCollider.center + pos;
+        Vector3 center = rot * (playerBody.localPosition + capsuleCollider.center) + pos;
+
+        Debug.DrawRay(center, transform.forward, Color.yellow);
 
         float radius = capsuleCollider.radius;
         float height = capsuleCollider.height;
@@ -426,7 +456,7 @@ public class PlayerMovement : MonoBehaviour
         // Check what objects this collider will hit when cast with this configuration excluding itself
         IEnumerable<RaycastHit> hits = Physics.CapsuleCastAll(
             top, bottom, radius, dir, dist, ~0, QueryTriggerInteraction.Ignore)
-            .Where(hit => hit.collider.transform != transform);
+            .Where(hit => hit.collider.transform != playerBody);
         bool didHit = hits.Count() > 0;
 
         // Find the closest objects hit
