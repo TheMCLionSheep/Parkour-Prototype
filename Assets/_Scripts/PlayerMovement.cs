@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions.Comparers;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering.Universal;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -27,15 +28,17 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private float chainActionBuffer = 0.05f;
     [SerializeField] private float coyoteTime = 0.05f;
-    [SerializeField] private float jumpBufferTime = 0.05f;
-    [SerializeField] private float reuseDelay = 0.1f;
+    [SerializeField] private float jumpBufferTime = 0.1f;
+    [SerializeField] private float reuseDelay = 0.2f;
+    [SerializeField] private float ragdollDelay = 0.2f;
 
     [SerializeField] private float ragdollControlSpeed = 5f;
 
     [SerializeField] private float diveAngleSpeed = 10f;
     [SerializeField] private float maxDiveAngle = 90f;
     [SerializeField] private float maxDiveCameraAngle = 45f;
-    [SerializeField] private float armLength = 0.5f;
+    [SerializeField] private float armLength = 1.5f;
+    [SerializeField] private float fadeArmLength = 1f;
 
     [SerializeField] private float anchorOffset = -1.5f;
     [SerializeField] private float fullHeight = 2f;
@@ -51,6 +54,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform playerCamera;
     [SerializeField] private Transform playerBody;
     [SerializeField] private Transform playerModel;
+    [SerializeField] private GameObject handprintDecal;
     [SerializeField] private GameObject playerRagdollCamera;
 
     private Vector2 cameraAngle;
@@ -80,6 +84,7 @@ public class PlayerMovement : MonoBehaviour
     private InputAction diveAction;
 
     private CapsuleCollider capsuleCollider;
+    private DecalProjector decalProjector;
 
     // Start is called before the first frame update
     void Awake()
@@ -95,7 +100,11 @@ public class PlayerMovement : MonoBehaviour
     }
 
     private void Start() {
-        Application.targetFrameRate = 120;
+        // Set up the decal project based on variable settings
+        handprintDecal.transform.localRotation = Quaternion.Euler(maxDiveCameraAngle, 0f, 0f);
+        decalProjector = handprintDecal.GetComponent<DecalProjector>();
+        decalProjector.size = new Vector3(1f, 1f, armLength);
+        decalProjector.fadeFactor = 0f;
     }
 
     private void OnEnable()
@@ -166,18 +175,27 @@ public class PlayerMovement : MonoBehaviour
         if (falling) // If falling, apply gravity downward
         {
             verticalVelocity += gravity * Time.deltaTime;
+            if (!ragdoll)
+            {
+                timeInRagdoll = 0f;
+            }
         }
         else // If on ground, reset vertical velocity.
         {
             verticalVelocity = 0;
             timeSinceOnGround = 0f;
-            if (diving && !ragdoll)
+            if (diving)
             {
-                ragdoll = true;
-                ragdollVelocity = horizontalRunVelocity + diveVelocity;
-                playerCamera.gameObject.SetActive(false);
-                playerRagdollCamera.SetActive(true);
+                timeInRagdoll += Time.deltaTime;
             }
+        }
+
+        if (timeInRagdoll >= ragdollDelay && !ragdoll)
+        {
+            ragdoll = true;
+            ragdollVelocity = horizontalRunVelocity + diveVelocity;
+            playerCamera.gameObject.SetActive(false);
+            playerRagdollCamera.SetActive(true);
         }
 
         HandleJumpDive(viewYaw * Vector2.up);
@@ -233,13 +251,23 @@ public class PlayerMovement : MonoBehaviour
             // If in dive, check the arm length for in-air jumping/diving
             if (diving)
             {
-                if (CheckArms(playerCamera.position, playerCamera.rotation, playerCamera.forward, armLength, out RaycastHit obstacleHit))
+                if (CheckArms(handprintDecal.transform.position, handprintDecal.transform.rotation, handprintDecal.transform.forward, armLength, out RaycastHit obstacleHit))
                 {
                     timeSinceDiveReady = 0f;
+                    // Fade the hand prints based on how far from the obstacle
+                    if (obstacleHit.distance < fadeArmLength)
+                    {
+                        decalProjector.fadeFactor = 1;
+                    }
+                    else {
+                        decalProjector.fadeFactor = 1 - (obstacleHit.distance - fadeArmLength) / (armLength - fadeArmLength);
+                        Debug.Log("Obstacle: " + obstacleHit + " Fade: " + decalProjector.fadeFactor);
+                    }
                 }
                 else
                 {
                     timeSinceDiveReady += Time.deltaTime;
+                    decalProjector.fadeFactor = 0;
                 }
             }
 
