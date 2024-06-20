@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Assertions.Comparers;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 
@@ -14,9 +13,14 @@ public class PlayerMovement : MonoBehaviour
     public const float maxAngleShoveDegrees = 60f;
 
     [SerializeField] private float mouseSensitivity = 0.1f;
+
     [SerializeField] private float maxSpeed = 7.5f;
     [SerializeField] private float runAcceleration = 50f;
     [SerializeField] private float runDeceleration = 30f;
+    [SerializeField] private float maxWalkSpeed = 4f;
+    [SerializeField] private float walkAcceleration = 40f;
+    [SerializeField] private float walkDeceleration = 30f;
+
     [SerializeField] private float groundDist = 0.01f;
     [SerializeField] private float maxWalkingAngle = 60f;
     [SerializeField] private float anglePower = 0.5f;
@@ -47,9 +51,10 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private int maxBounces = 5;
 
-    [SerializeField] private float gravity;
-    [SerializeField] private float diveDrag;
-    [SerializeField] private float ragdollDrag;
+    [SerializeField] private float gravity = -25;
+    [SerializeField] private float diveDrag = 5;
+    [SerializeField] private float slideDrag = 3;
+    [SerializeField] private float ragdollDrag = 2;
 
     [SerializeField] private Transform playerCamera;
     [SerializeField] private Transform playerBody;
@@ -64,17 +69,22 @@ public class PlayerMovement : MonoBehaviour
     private float timeSinceDive = Mathf.Infinity;
     private float timeSinceJumpPressed = Mathf.Infinity;
     private float timeSinceDivePressed = Mathf.Infinity;
+    private float timeSinceCrouchPressed = Mathf.Infinity;
     private float timeSinceOnGround = 0f;
     private float timeSinceDiveReady = Mathf.Infinity;
     private float timeInRagdoll = 0f;
 
     private bool pressingDive = false;
+    private bool pressingCrouch = false;
     private bool diving = false;
     private bool ragdoll = false;
+    private bool crouching = false;
+    private bool sliding = false;
 
     private float verticalVelocity;
     private Vector2 horizontalRunVelocity;
     private Vector2 diveVelocity;
+    private Vector2 slideVelocity;
     private Vector2 ragdollVelocity;
     
     private PlayerInput playerInput;
@@ -82,6 +92,7 @@ public class PlayerMovement : MonoBehaviour
     private InputAction lookAction;
     private InputAction jumpAction;
     private InputAction diveAction;
+    private InputAction crouchAction;
 
     private CapsuleCollider capsuleCollider;
     private DecalProjector decalProjector;
@@ -97,6 +108,7 @@ public class PlayerMovement : MonoBehaviour
         moveAction = playerInput.actions.FindAction("Move");
         jumpAction = playerInput.actions.FindAction("Jump");
         diveAction = playerInput.actions.FindAction("Dive");
+        crouchAction = playerInput.actions.FindAction("Crouch");
     }
 
     private void Start() {
@@ -112,17 +124,16 @@ public class PlayerMovement : MonoBehaviour
         jumpAction.performed += JumpPressed;
         diveAction.performed += DivePressed;
         diveAction.canceled += DiveCancelled;
+        crouchAction.performed += CrouchPressed;
+        crouchAction.canceled += CrouchCancelled;
     }
 
     private void OnDisable() {
         jumpAction.performed -= JumpPressed;
         diveAction.performed -= DivePressed;
         diveAction.canceled -= DiveCancelled;
-    }
-
-    private void DiveCancelled(InputAction.CallbackContext context)
-    {
-        pressingDive = false;
+        crouchAction.performed -= CrouchPressed;
+        crouchAction.canceled -= CrouchCancelled;
     }
 
     private void JumpPressed(InputAction.CallbackContext context)
@@ -140,6 +151,25 @@ public class PlayerMovement : MonoBehaviour
             timeSinceDivePressed = 0f;
         }
         pressingDive = true;
+    }
+
+    private void DiveCancelled(InputAction.CallbackContext context)
+    {
+        pressingDive = false;
+    }
+
+    private void CrouchPressed(InputAction.CallbackContext context)
+    {
+        if (timeSinceCrouchPressed >= reuseDelay)
+        {
+            timeSinceCrouchPressed = 0f;
+        }
+        pressingCrouch = true;
+    }
+
+    private void CrouchCancelled(InputAction.CallbackContext context)
+    {
+        pressingCrouch = false;
     }
 
     // Update is called once per frame
@@ -184,7 +214,7 @@ public class PlayerMovement : MonoBehaviour
         {
             verticalVelocity = 0;
             timeSinceOnGround = 0f;
-            if (diving)
+            if (diving && !sliding)
             {
                 timeInRagdoll += Time.deltaTime;
             }
@@ -198,58 +228,63 @@ public class PlayerMovement : MonoBehaviour
             playerRagdollCamera.SetActive(true);
         }
 
-        HandleJumpDive(viewYaw * Vector2.up);
+        HandleActions(viewYaw * Vector2.up);
 
         // Apply a constant stopping velocity to the player's run movement to slow the player down.
-        Vector2 stoppingVelocity = -horizontalRunVelocity.normalized * runDeceleration * Time.deltaTime;
-        if (stoppingVelocity.magnitude > horizontalRunVelocity.magnitude) // If the deceleration will cause the player to change velocity to negative, set to 0
+        if (!crouching)
         {
-            horizontalRunVelocity = Vector2.zero;
+            horizontalRunVelocity = CalculateDrag(horizontalRunVelocity, runDeceleration);
         }
         else {
-            horizontalRunVelocity += stoppingVelocity;
+            horizontalRunVelocity = CalculateDrag(horizontalRunVelocity, walkDeceleration);
         }
+        
 
         // If pressing in a direction, speed up in that direction
         if (moveDirection.magnitude > 0f && !ragdoll)
         {
             horizontalRunVelocity += normalizedMoveDirection * runAcceleration * Time.deltaTime;
-            if (horizontalRunVelocity.magnitude > maxSpeed)
+            if (!crouching && horizontalRunVelocity.magnitude > maxSpeed)
             {
                 horizontalRunVelocity = horizontalRunVelocity.normalized * maxSpeed;
+            }
+            else if (crouching && horizontalRunVelocity.magnitude > maxWalkSpeed)
+            {
+                horizontalRunVelocity = horizontalRunVelocity.normalized * maxWalkSpeed;
             }
         }
         Vector3 movement;
 
-        if (!ragdoll)
+        if (ragdoll)
         {
-            // The resultant movement is a combination of the run movement (controlled by keys), and diving velocity.
-            movement = new Vector3(horizontalRunVelocity.x + diveVelocity.x, 0f, horizontalRunVelocity.y + diveVelocity.y);            
+            // Apply a constant stopping velocity to the player's slide movement to slow the player down.
+            ragdollVelocity = CalculateDrag(ragdollVelocity,ragdollDrag);
+
+            movement = new Vector3(ragdollVelocity.x, 0f, ragdollVelocity.y);
+        }
+        else if (sliding)
+        {
+            // Apply a constant stopping velocity to the player's slide movement to slow the player down.
+            slideVelocity = CalculateDrag(slideVelocity,slideDrag);
+
+            movement = new Vector3(slideVelocity.x, 0f, slideVelocity.y);
         }
         else
         {
-            // Apply a constant stopping velocity to the player's slide movement to slow the player down.
-            Vector2 slideStopVelocity = -ragdollVelocity * ragdollDrag * Time.deltaTime;
-            if (slideStopVelocity.magnitude > ragdollVelocity.magnitude) // If the deceleration will cause the player to change velocity to negative, set to 0
-            {
-                ragdollVelocity = Vector2.zero;
-            }
-            else {
-                ragdollVelocity += slideStopVelocity;
-            }
-
-            movement = new Vector3(ragdollVelocity.x, 0f, ragdollVelocity.y);
+            // The resultant movement is a combination of the run movement (controlled by keys), and diving velocity.
+            movement = new Vector3(horizontalRunVelocity.x + diveVelocity.x, 0f, horizontalRunVelocity.y + diveVelocity.y);            
         }
 
         transform.position = MovePlayer(movement * Time.deltaTime);
         transform.position = MovePlayer(verticalVelocity * Time.deltaTime * Vector3.up);
     }
 
-    private void HandleJumpDive(Vector2 diveDirection)
+    private void HandleActions(Vector2 diveDirection)
     {
+        decalProjector.fadeFactor = 0;
         if (!ragdoll) {
             // If in dive, check the arm length for in-air jumping/diving
-            if (diving)
+            if (diving && !sliding)
             {
                 if (CheckArms(handprintDecal.transform.position, handprintDecal.transform.rotation, handprintDecal.transform.forward, armLength, out RaycastHit obstacleHit))
                 {
@@ -267,7 +302,6 @@ public class PlayerMovement : MonoBehaviour
                 else
                 {
                     timeSinceDiveReady += Time.deltaTime;
-                    decalProjector.fadeFactor = 0;
                 }
             }
 
@@ -326,9 +360,25 @@ public class PlayerMovement : MonoBehaviour
                 Debug.Log("Dive chain from jump");
             }
 
+            // If you crouch and dive at the same time on the ground, you will slide
+            bool attemptingSlide = timeSinceCrouchPressed <= jumpBufferTime;
+            if (attemptingSlide && diving && timeSinceDive <= chainActionBuffer && timeSinceOnGround <= chainActionBuffer + coyoteTime)
+            {
+                verticalVelocity = -divePower.y;
+                slideVelocity = horizontalRunVelocity + diveVelocity;
+                timeSinceCrouchPressed = Mathf.Infinity;
+                sliding = true;
+                Debug.Log("Slide!");
+            }
+            if (!pressingDive && sliding)
+            {
+                sliding = false;
+            }
+
             diving = pressingDive;
+            crouching = pressingCrouch;
         } else {
-            // If player hit jump within the buffer window, attempting jump
+            // If in ragdoll, and hit jump, leave the ragdoll
             bool attemptingJump = timeSinceJumpPressed <= jumpBufferTime;
 
             if (attemptingJump && ragdollVelocity.magnitude < ragdollControlSpeed)
@@ -537,5 +587,18 @@ public class PlayerMovement : MonoBehaviour
 
         // Return if any objects were hit
         return didHit;
+    }
+
+    private Vector2 CalculateDrag(Vector2 curVelocity, float dragForce)
+    {
+        Vector2 stoppingVelocity = -curVelocity.normalized * dragForce * Time.deltaTime;
+        if (stoppingVelocity.magnitude > curVelocity.magnitude) // If the deceleration will cause the player to change velocity to negative, set to 0
+        {
+            curVelocity = Vector2.zero;
+        }
+        else {
+            curVelocity += stoppingVelocity;
+        }
+        return curVelocity;
     }
 }
