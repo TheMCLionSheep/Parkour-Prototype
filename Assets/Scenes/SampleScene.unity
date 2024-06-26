@@ -35670,6 +35670,7 @@ MonoBehaviour:
   divePower: {x: 0, y: 5}
   jumpDivePower: {x: 0, y: 7}
   divingJumpPower: {x: 4, y: 8}
+  slidingPower: {x: 5, y: 0}
   chainActionBuffer: 0.05
   coyoteTime: 0.05
   jumpBufferTime: 0.1
@@ -35690,6 +35691,10 @@ MonoBehaviour:
   diveDrag: 4
   slideDrag: 3
   ragdollDrag: 2
+  minImpactVelocity: 6
+  maxImpactVelocity: 20
+  impactRecovery: 5
+  impactToHeight: 1
   playerCamera: {fileID: 599133779}
   playerBody: {fileID: 443168747}
   playerModel: {fileID: 813483753}

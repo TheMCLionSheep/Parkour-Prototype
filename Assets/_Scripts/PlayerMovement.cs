@@ -29,6 +29,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Vector2 divePower = new Vector2(5, 5);
     [SerializeField] private Vector2 jumpDivePower = new Vector2(5, 7);
     [SerializeField] private Vector2 divingJumpPower = new Vector2(5, 7);
+    [SerializeField] private Vector2 slidingPower = new Vector2(5, 0);
 
     [SerializeField] private float chainActionBuffer = 0.05f;
     [SerializeField] private float coyoteTime = 0.05f;
@@ -56,6 +57,11 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float slideDrag = 3;
     [SerializeField] private float ragdollDrag = 2;
 
+    [SerializeField] private float minImpactVelocity = 1;
+    [SerializeField] private float maxImpactVelocity = 10;
+    [SerializeField] private float impactRecovery = 1;
+    [SerializeField] private float impactToHeight = 1;
+
     [SerializeField] private Transform playerCamera;
     [SerializeField] private Transform playerBody;
     [SerializeField] private Transform playerModel;
@@ -72,6 +78,7 @@ public class PlayerMovement : MonoBehaviour
     private float timeSinceCrouchPressed = Mathf.Infinity;
     private float timeSinceOnGround = 0f;
     private float timeSinceDiveReady = Mathf.Infinity;
+    private float timeInSlide = 0f;
     private float timeInRagdoll = 0f;
 
     private bool pressingDive = false;
@@ -86,6 +93,8 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 diveVelocity;
     private Vector2 slideVelocity;
     private Vector2 ragdollVelocity;
+
+    private float landingVelocity = 0;
     
     private PlayerInput playerInput;
     private InputAction moveAction;
@@ -205,27 +214,60 @@ public class PlayerMovement : MonoBehaviour
         if (falling) // If falling, apply gravity downward
         {
             verticalVelocity += gravity * Time.deltaTime;
-            if (!ragdoll)
+            if (!sliding)
             {
-                timeInRagdoll = 0f;
+                timeInSlide = 0f;
             }
         }
-        else // If on ground, reset vertical velocity.
+        else // If on ground, calculate impact force and reset vertical velocity
         {
+            if (landingVelocity == 0 && minImpactVelocity <= -verticalVelocity && -verticalVelocity <= maxImpactVelocity)
+            {
+                landingVelocity = verticalVelocity;
+                Debug.Log("landing Velocity: " + landingVelocity);
+            }
+            else if (-verticalVelocity > maxImpactVelocity)
+            {
+                Debug.Log("Too much landing impact! " + -verticalVelocity);
+            }
+
             verticalVelocity = 0;
             timeSinceOnGround = 0f;
-            if (diving && !sliding)
+            if (diving)
             {
-                timeInRagdoll += Time.deltaTime;
+                timeInSlide += Time.deltaTime;
             }
         }
 
-        if (timeInRagdoll >= ragdollDelay && !ragdoll)
+        if (landingVelocity < 0)
         {
-            ragdoll = true;
-            ragdollVelocity = horizontalRunVelocity + diveVelocity;
-            playerCamera.gameObject.SetActive(false);
-            playerRagdollCamera.SetActive(true);
+            ManageHeight(landingVelocity * impactToHeight * Time.deltaTime * 0.5f);
+
+            Debug.Log("Landing Velocity " +  landingVelocity);
+            landingVelocity += impactRecovery * Time.deltaTime;
+
+            if (landingVelocity > 0)
+            {
+                landingVelocity = 0;
+            }
+
+            ManageHeight(landingVelocity * impactToHeight * Time.deltaTime * 0.5f);
+        }
+        else if (landingVelocity == 0 && !diving)
+        {
+            // How much the capsule will get taller this frame
+            float heightChange = Mathf.Min(standupSpeed * Time.deltaTime, fullHeight - capsuleCollider.height);
+
+            // Check if we will hit the ground with this height change
+            ManageHeight(heightChange);
+        }
+
+        if (timeInSlide >= ragdollDelay && !sliding) // Move into sliding if you are diving and hit the ground
+        {
+            sliding = true;
+            slideVelocity = horizontalRunVelocity + diveVelocity;
+            // playerCamera.gameObject.SetActive(false);
+            // playerRagdollCamera.SetActive(true);
         }
 
         HandleActions(viewYaw * Vector2.up);
@@ -255,14 +297,14 @@ public class PlayerMovement : MonoBehaviour
         }
         Vector3 movement;
 
-        if (ragdoll)
-        {
-            // Apply a constant stopping velocity to the player's slide movement to slow the player down.
-            ragdollVelocity = CalculateDrag(ragdollVelocity,ragdollDrag);
+        // if (ragdoll)
+        // {
+        //     // Apply a constant stopping velocity to the player's slide movement to slow the player down.
+        //     ragdollVelocity = CalculateDrag(ragdollVelocity,ragdollDrag);
 
-            movement = new Vector3(ragdollVelocity.x, 0f, ragdollVelocity.y);
-        }
-        else if (sliding)
+        //     movement = new Vector3(ragdollVelocity.x, 0f, ragdollVelocity.y);
+        // }
+        if (sliding)
         {
             // Apply a constant stopping velocity to the player's slide movement to slow the player down.
             slideVelocity = CalculateDrag(slideVelocity,slideDrag);
@@ -365,8 +407,9 @@ public class PlayerMovement : MonoBehaviour
             if (attemptingSlide && diving && timeSinceDive <= chainActionBuffer && timeSinceOnGround <= chainActionBuffer + coyoteTime)
             {
                 verticalVelocity = -divePower.y;
-                slideVelocity = horizontalRunVelocity + diveVelocity;
+                diveVelocity += diveDirection * slidingPower.x;
                 timeSinceCrouchPressed = Mathf.Infinity;
+                slideVelocity = horizontalRunVelocity + diveVelocity;
                 sliding = true;
                 Debug.Log("Slide!");
             }
@@ -398,19 +441,11 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            // How much the capsule will get taller this frame
-            float heightChange = Mathf.Min(standupSpeed * Time.deltaTime, fullHeight - capsuleCollider.height);
+            // // How much the capsule will get taller this frame
+            // float heightChange = Mathf.Min(standupSpeed * Time.deltaTime, fullHeight - capsuleCollider.height);
 
-            // Check if we will hit the ground with this height change
-            RaycastHit groundHit;
-            if (CastSelf(transform.position, transform.rotation, Vector3.down, heightChange, out groundHit))
-            {
-                // Move upward if we would grow into the ground.
-                transform.position += new Vector3(0f, heightChange + groundDist - groundHit.distance, 0f);
-            }
-
-            capsuleCollider.height += heightChange;
-            capsuleCollider.center = new Vector3(0f, anchorOffset + (fullHeight + fullHeight - capsuleCollider.height) / 2, 0f);
+            // // Check if we will hit the ground with this height change
+            // ManageHeight(heightChange);
         }
         
         // If you are diving, rotate into diving position, else, move back upright.
@@ -563,6 +598,8 @@ public class PlayerMovement : MonoBehaviour
 
     private bool CheckArms(Vector3 pos, Quaternion rot, Vector3 dir, float dist, out RaycastHit hit)
     {
+        //TODO: make the raycast more forgiving (potentially based on speed)
+
         // Check what objects this the ray will hit, excluding self
         IEnumerable<RaycastHit> hits = Physics.RaycastAll(
             pos, dir, dist, ~0, QueryTriggerInteraction.Ignore)
@@ -600,5 +637,35 @@ public class PlayerMovement : MonoBehaviour
             curVelocity += stoppingVelocity;
         }
         return curVelocity;
+    }
+
+    private void ManageHeight(float heightChange)
+    {
+        if (heightChange > 0)
+        {
+            // Check if we will hit the ground with this height change
+            RaycastHit groundHit;
+            if (CastSelf(transform.position, transform.rotation, Vector3.down, heightChange, out groundHit))
+            {
+                // Move upward if we would grow into the ground.
+                transform.position += new Vector3(0f, heightChange + groundDist - groundHit.distance, 0f);
+            }
+        }
+        else
+        {
+            // Check if we will hit the ground with this height change
+            RaycastHit groundHit;
+            if (CastSelf(transform.position, transform.rotation, Vector3.down, -heightChange + groundDist, out groundHit))
+            {
+                // Move right above the ground
+                transform.position += new Vector3(0f, heightChange + groundDist - groundHit.distance, 0f);
+            }
+            else {
+                transform.position += new Vector3(0f, heightChange, 0f);
+            }
+        }        
+
+        capsuleCollider.height += heightChange;
+        capsuleCollider.center = new Vector3(0f, anchorOffset + (fullHeight + fullHeight - capsuleCollider.height) / 2, 0f);
     }
 }

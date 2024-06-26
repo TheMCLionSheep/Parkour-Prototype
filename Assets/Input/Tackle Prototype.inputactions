@@ -241,6 +241,17 @@
                 },
                 {
                     "name": "",
+                    "id": "ae9deefc-8add-44fd-a508-71b31f6cd803",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Dive",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "8a95584a-ace1-4f9a-808c-dc74577e8f76",
                     "path": "<Keyboard>/shift",
                     "interactions": "",
