@@ -3774,7 +3774,7 @@ Transform:
   m_GameObject: {fileID: 162774608}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -5, y: -0.5999999, z: 42.5}
+  m_LocalPosition: {x: -4.5, y: -0.5999999, z: 42.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4127,7 +4127,7 @@ Transform:
   m_GameObject: {fileID: 179568334}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -22.5, y: -1.0999999, z: 5.5}
+  m_LocalPosition: {x: -22.5, y: -1.0999999, z: 4.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -18322,7 +18322,7 @@ Transform:
   m_GameObject: {fileID: 1157231029}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -20, y: -0.3499999, z: 5.5}
+  m_LocalPosition: {x: -20, y: -0.3499999, z: 4.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -22862,7 +22862,7 @@ Transform:
   m_GameObject: {fileID: 1379248109}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -17.5, y: -0.5999999, z: 5.5}
+  m_LocalPosition: {x: -17.5, y: -0.5999999, z: 4.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -35693,8 +35693,8 @@ MonoBehaviour:
   ragdollDrag: 2
   minImpactVelocity: 6
   maxImpactVelocity: 20
-  impactRecovery: 5
-  impactToHeight: 1
+  impactRecovery: 150
+  impactToHeight: 0.7
   playerCamera: {fileID: 599133779}
   playerBody: {fileID: 443168747}
   playerModel: {fileID: 813483753}

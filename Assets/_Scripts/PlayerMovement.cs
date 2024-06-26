@@ -218,6 +218,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 timeInSlide = 0f;
             }
+            Debug.Log(falling);
         }
         else // If on ground, calculate impact force and reset vertical velocity
         {
@@ -243,7 +244,6 @@ public class PlayerMovement : MonoBehaviour
         {
             ManageHeight(landingVelocity * impactToHeight * Time.deltaTime * 0.5f);
 
-            Debug.Log("Landing Velocity " +  landingVelocity);
             landingVelocity += impactRecovery * Time.deltaTime;
 
             if (landingVelocity > 0)
@@ -509,6 +509,7 @@ public class PlayerMovement : MonoBehaviour
             // If we are overlapping with something, just exit.
             if (hit.distance == 0)
             {
+                Debug.Log("inside object");
                 break;
             }
 
@@ -641,24 +642,25 @@ public class PlayerMovement : MonoBehaviour
 
     private void ManageHeight(float heightChange)
     {
-        if (heightChange > 0)
+        if (heightChange >= 0)
         {
             // Check if we will hit the ground with this height change
             RaycastHit groundHit;
             if (CastSelf(transform.position, transform.rotation, Vector3.down, heightChange, out groundHit))
             {
                 // Move upward if we would grow into the ground.
-                transform.position += new Vector3(0f, heightChange + groundDist - groundHit.distance, 0f);
+                transform.position += new Vector3(0f, heightChange + groundDist - groundHit.distance - epsilon, 0f);
             }
         }
-        else
+        else if (heightChange < 0)
         {
+            Debug.Log("Shrink height");
             // Check if we will hit the ground with this height change
             RaycastHit groundHit;
             if (CastSelf(transform.position, transform.rotation, Vector3.down, -heightChange + groundDist, out groundHit))
             {
                 // Move right above the ground
-                transform.position += new Vector3(0f, heightChange + groundDist - groundHit.distance, 0f);
+                transform.position += new Vector3(0f, heightChange, 0f);
             }
             else {
                 transform.position += new Vector3(0f, heightChange, 0f);
