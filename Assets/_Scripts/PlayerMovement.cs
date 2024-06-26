@@ -128,6 +128,11 @@ public class PlayerMovement : MonoBehaviour
         decalProjector.fadeFactor = 0f;
     }
 
+    public void EnableCamera()
+    {
+        playerCamera.gameObject.SetActive(true);
+    }
+
     private void OnEnable()
     {
         jumpAction.performed += JumpPressed;
