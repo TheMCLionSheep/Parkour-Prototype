@@ -36,6 +36,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float coyoteTime = 0.05f;
     [SerializeField] private float jumpBufferTime = 0.1f;
     [SerializeField] private float reuseDelay = 0.2f;
+    [SerializeField] private float slideDelay = 0.1f;
     [SerializeField] private float ragdollDelay = 0.2f;
 
     [SerializeField] private float ragdollControlSpeed = 5f;
@@ -228,11 +229,11 @@ public class PlayerMovement : MonoBehaviour
             {
                 timeInSlide = 0f;
             }
-            Debug.Log(falling);
+            timeSinceOnGround += Time.deltaTime;
         }
         else // If on ground, calculate impact force and reset vertical velocity
         {
-            if (landingVelocity == 0 && minImpactVelocity <= -verticalVelocity && -verticalVelocity <= maxImpactVelocity)
+            if (timeSinceOnGround > 0f && minImpactVelocity <= -verticalVelocity && -verticalVelocity <= maxImpactVelocity)
             {
                 landingVelocity = verticalVelocity;
                 Debug.Log("landing Velocity: " + landingVelocity);
@@ -250,8 +251,10 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        if (landingVelocity < 0)
+        // Make the player shorter (impact) depending on how hard they hit the ground
+        if (landingVelocity < 0 && !diving)
         {
+            // Apply first half of the height impact
             ManageHeight(landingVelocity * impactToHeight * Time.deltaTime * 0.5f);
 
             landingVelocity += impactRecovery * Time.deltaTime;
@@ -261,9 +264,10 @@ public class PlayerMovement : MonoBehaviour
                 landingVelocity = 0;
             }
 
+            // Apply second half of height impact (to get midpoint of height impact)
             ManageHeight(landingVelocity * impactToHeight * Time.deltaTime * 0.5f);
         }
-        else if (landingVelocity == 0 && !diving)
+        else if (landingVelocity == 0 && !diving) // If the player is on the ground standing, and not impacting, stand up
         {
             // How much the capsule will get taller this frame
             float heightChange = Mathf.Min(standupSpeed * Time.deltaTime, fullHeight - capsuleCollider.height);
@@ -276,8 +280,11 @@ public class PlayerMovement : MonoBehaviour
         {
             sliding = true;
             slideVelocity = horizontalRunVelocity + diveVelocity;
-            // playerCamera.gameObject.SetActive(false);
-            // playerRagdollCamera.SetActive(true);
+
+            // Reduce the slide velocity as a fraction depending on adjacent / hypotenus
+            float percentReduction = (slideVelocity.magnitude / Mathf.Sqrt((slideVelocity.magnitude * slideVelocity.magnitude) + (landingVelocity * landingVelocity)));
+            Debug.Log("Reduction: " + percentReduction);
+            slideVelocity *= percentReduction;
         }
 
         HandleActions(viewYaw * Vector2.up);
@@ -320,6 +327,8 @@ public class PlayerMovement : MonoBehaviour
             slideVelocity = CalculateDrag(slideVelocity,slideDrag);
 
             movement = new Vector3(slideVelocity.x, 0f, slideVelocity.y);
+
+            landingVelocity = 0;
         }
         else
         {
@@ -378,7 +387,7 @@ public class PlayerMovement : MonoBehaviour
 
                 Debug.Log("Jump chain from dive");
             }
-            else if (attemptingJump && diving && timeSinceDive > chainActionBuffer && timeSinceDiveReady <= coyoteTime)
+            else if (attemptingJump && diving && timeSinceDive > chainActionBuffer && timeSinceDiveReady <= coyoteTime && !sliding)
             {
                 // If you pressed the jump button while diving, and there's an obstacle, apply diving jump force
                 verticalVelocity += divingJumpPower.y;
@@ -426,6 +435,7 @@ public class PlayerMovement : MonoBehaviour
             if (!pressingDive && sliding)
             {
                 sliding = false;
+                timeInSlide = 0f;
             }
 
             diving = pressingDive;
@@ -490,7 +500,6 @@ public class PlayerMovement : MonoBehaviour
         timeSinceDive += Time.deltaTime;
         timeSinceJumpPressed += Time.deltaTime;
         timeSinceDivePressed += Time.deltaTime;
-        timeSinceOnGround += Time.deltaTime;
     }
 
     public Vector3 MovePlayer(Vector3 movement)
@@ -664,7 +673,6 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (heightChange < 0)
         {
-            Debug.Log("Shrink height");
             // Check if we will hit the ground with this height change
             RaycastHit groundHit;
             if (CastSelf(transform.position, transform.rotation, Vector3.down, -heightChange + groundDist, out groundHit))

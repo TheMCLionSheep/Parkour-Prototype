@@ -346,11 +346,12 @@ MonoBehaviour:
   divePower: {x: 0, y: 5}
   jumpDivePower: {x: 0, y: 7}
   divingJumpPower: {x: 4, y: 8}
-  slidingPower: {x: 5, y: 0}
+  slidingPower: {x: 2, y: 0}
   chainActionBuffer: 0.05
   coyoteTime: 0.05
   jumpBufferTime: 0.1
-  reuseDelay: 0.2
+  reuseDelay: 0.1
+  slideDelay: 0.1
   ragdollDelay: 0.1
   ragdollControlSpeed: 3
   diveAngleSpeed: 200
