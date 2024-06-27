@@ -366,7 +366,7 @@ MonoBehaviour:
   maxBounces: 5
   gravity: -25
   diveDrag: 4
-  slideDrag: 3
+  slideDrag: 4
   ragdollDrag: 2
   minImpactVelocity: 6
   maxImpactVelocity: 20

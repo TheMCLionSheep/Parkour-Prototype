@@ -282,7 +282,7 @@ public class PlayerMovement : MonoBehaviour
             slideVelocity = horizontalRunVelocity + diveVelocity;
 
             // Reduce the slide velocity as a fraction depending on adjacent / hypotenus
-            float percentReduction = (slideVelocity.magnitude / Mathf.Sqrt((slideVelocity.magnitude * slideVelocity.magnitude) + (landingVelocity * landingVelocity)));
+            float percentReduction = slideVelocity.magnitude / (slideVelocity.magnitude - landingVelocity);
             Debug.Log("Reduction: " + percentReduction);
             slideVelocity *= percentReduction;
         }
