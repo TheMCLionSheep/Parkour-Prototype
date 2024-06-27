@@ -13,6 +13,7 @@ public class PlayerMovement : MonoBehaviour
     public const float maxAngleShoveDegrees = 60f;
 
     [SerializeField] private float mouseSensitivity = 0.1f;
+    [SerializeField] private float mouseSnappiness = 10f;
 
     [SerializeField] private float maxSpeed = 7.5f;
     [SerializeField] private float runAcceleration = 50f;
@@ -69,6 +70,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private GameObject playerRagdollCamera;
 
     private Vector2 cameraAngle;
+    private Vector2 cameraAngleAccumulator;
     private float diveAngle = 0f;
 
     private float timeSinceJump = Mathf.Infinity;
@@ -196,21 +198,24 @@ public class PlayerMovement : MonoBehaviour
         // Calculate new camera angle based on change
         if (!ragdoll)
         {
-            cameraAngle.x += -lookDelta.y * mouseSensitivity;
-            cameraAngle.y += lookDelta.x * mouseSensitivity;
+            cameraAngle.x += lookDelta.x * mouseSensitivity;
+            cameraAngle.y += -lookDelta.y * mouseSensitivity;
+
+            // Clamp max up and down angle
+            cameraAngle.y = Mathf.Clamp(cameraAngle.y, minPitch, maxPitch);
+
+            // Smoothly move toward the correct destination (avoid jitteriness)
+            cameraAngleAccumulator = Vector2.Lerp(cameraAngleAccumulator, cameraAngle, mouseSnappiness * Time.deltaTime);
         }
 
-        // Clamp max up and down angle
-        cameraAngle.x = Mathf.Clamp(cameraAngle.x, minPitch, maxPitch);
-
         // Rotate the camera based on y movement
-        playerCamera.localRotation = Quaternion.Euler(cameraAngle.x, 0f, 0f);
-        transform.rotation = Quaternion.Euler(0f, cameraAngle.y, 0f);
+        playerCamera.localRotation = Quaternion.Euler(cameraAngleAccumulator.y, 0f, 0f);
+        transform.rotation = Quaternion.Euler(0f, cameraAngleAccumulator.x, 0f);
         
         var moveDirection = new Vector3(playerMove.x, 0, playerMove.y);
 
         // Get the move direction based on player rotation
-        var viewYaw = Quaternion.Euler(0, 0, -cameraAngle.y);
+        var viewYaw = Quaternion.Euler(0, 0, -cameraAngleAccumulator.x);
         Vector2 rotatedVector = viewYaw * playerMove;
         Vector2 normalizedMoveDirection = rotatedVector.normalized * Mathf.Min(rotatedVector.magnitude, 1.0f);
 
