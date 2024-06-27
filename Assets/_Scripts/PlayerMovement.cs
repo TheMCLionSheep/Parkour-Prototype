@@ -56,6 +56,7 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private float gravity = -25;
     [SerializeField] private float diveDrag = 5;
+    [SerializeField] private float addedDiveDrag = 0.1f;
     [SerializeField] private float slideDrag = 3;
     [SerializeField] private float ragdollDrag = 2;
 
@@ -283,7 +284,6 @@ public class PlayerMovement : MonoBehaviour
 
             // Reduce the slide velocity as a fraction depending on adjacent / hypotenus
             float percentReduction = slideVelocity.magnitude / (slideVelocity.magnitude - landingVelocity);
-            Debug.Log("Reduction: " + percentReduction);
             slideVelocity *= percentReduction;
         }
 
@@ -314,6 +314,22 @@ public class PlayerMovement : MonoBehaviour
         }
         Vector3 movement;
 
+        // Slow the dive velocity down if not pressing in the direction of the dive velocity
+        if (diveVelocity.magnitude > 0f)
+        {
+            // Project movement direction onto dive direction. Subtract dive direction from move projection. Remainder is extra drag to apply
+            float moveProjectionDistance = Vector2.Dot(diveVelocity.normalized, normalizedMoveDirection);
+            if (moveProjectionDistance >= 0f)
+            {
+                diveVelocity = CalculateDrag(diveVelocity, (1 - moveProjectionDistance) * addedDiveDrag);
+            }
+            else
+            {
+                diveVelocity = Vector2.zero;
+            }
+            Debug.Log("Projection: " + moveProjectionDistance + " Dive Velocity : " + diveVelocity.magnitude);
+        }
+
         // if (ragdoll)
         // {
         //     // Apply a constant stopping velocity to the player's slide movement to slow the player down.
@@ -333,7 +349,7 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             // The resultant movement is a combination of the run movement (controlled by keys), and diving velocity.
-            movement = new Vector3(horizontalRunVelocity.x + diveVelocity.x, 0f, horizontalRunVelocity.y + diveVelocity.y);            
+            movement = new Vector3(horizontalRunVelocity.x + diveVelocity.x, 0f, horizontalRunVelocity.y + diveVelocity.y);   
         }
 
         transform.position = MovePlayer(movement * Time.deltaTime);
@@ -482,13 +498,7 @@ public class PlayerMovement : MonoBehaviour
         // Reduce any diving forces by air friction
         if (diveVelocity.magnitude > 0f)
         {
-            Vector2 dragVelocity = diveVelocity.normalized * diveDrag * Time.deltaTime;
-            if (dragVelocity.magnitude >= diveVelocity.magnitude) {
-                diveVelocity = Vector2.zero;
-            }
-            else {
-                diveVelocity -= diveVelocity.normalized * diveDrag * Time.deltaTime;
-            }
+            diveVelocity = CalculateDrag(diveVelocity, diveDrag);
         }
 
         // Rotate the player based on diving angle
