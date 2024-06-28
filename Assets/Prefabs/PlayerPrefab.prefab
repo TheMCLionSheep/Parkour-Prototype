@@ -411,6 +411,7 @@ MonoBehaviour:
   _networkBehaviours:
   - {fileID: 9138553827790420217}
   - {fileID: 6715681884679647864}
+  - {fileID: 1400604357965738011}
   <SerializedRootNetworkBehaviour>k__BackingField: {fileID: 0}
   <NestedRootNetworkBehaviours>k__BackingField: []
   SerializedTransformProperties:
@@ -436,7 +437,7 @@ MonoBehaviour:
   _spectatorInterpolation: 2
   _enableTeleport: 0
   _teleportThreshold: 1
-  <PrefabId>k__BackingField: 1
+  <PrefabId>k__BackingField: 2
   <SpawnableCollectionId>k__BackingField: 0
   <SceneId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 4003562906077371165
@@ -1826,6 +1827,37 @@ Transform:
   m_Children:
   - {fileID: 4966363196589317514}
   m_Father: {fileID: 5123042412116612957}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2583190013794437564
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1259411283069938480}
+  m_Layer: 0
+  m_Name: Flag Holder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1259411283069938480
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2583190013794437564}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7189300031429758400}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2610438399812487577
 GameObject:
@@ -4967,6 +4999,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2139031810480631073}
+  - {fileID: 1259411283069938480}
   m_Father: {fileID: 488549757660853215}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7119497686996975985
@@ -5979,6 +6012,7 @@ GameObject:
   - component: {fileID: 488549757660853215}
   - component: {fileID: 1337823192871142927}
   - component: {fileID: 3191457242515058606}
+  - component: {fileID: 1400604357965738011}
   m_Layer: 0
   m_Name: Player Body
   m_TagString: Untagged
@@ -6052,6 +6086,22 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: -0.5, z: 0}
+--- !u!114 &1400604357965738011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8565149118489908221}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53d33764ef0cb42478c4609f944cca6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 2
+  _addedNetworkObject: {fileID: 7948087436743643495}
+  _networkObjectCache: {fileID: 7948087436743643495}
+  flagHolder: {fileID: 1259411283069938480}
 --- !u!1 &8585703932964760823
 GameObject:
   m_ObjectHideFlags: 0

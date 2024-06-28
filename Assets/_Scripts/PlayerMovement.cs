@@ -109,6 +109,7 @@ public class PlayerMovement : MonoBehaviour
 
     private CapsuleCollider capsuleCollider;
     private DecalProjector decalProjector;
+    private PlayerTackle playerTackle;
 
     // Start is called before the first frame update
     void Awake()
@@ -116,6 +117,7 @@ public class PlayerMovement : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         playerInput = GetComponent<PlayerInput>();
         capsuleCollider = playerBody.GetComponent<CapsuleCollider>();
+        playerTackle = playerBody.GetComponent<PlayerTackle>();
 
         lookAction = playerInput.actions.FindAction("Look");
         moveAction = playerInput.actions.FindAction("Move");
@@ -327,7 +329,6 @@ public class PlayerMovement : MonoBehaviour
             {
                 diveVelocity = Vector2.zero;
             }
-            Debug.Log("Projection: " + moveProjectionDistance + " Dive Velocity : " + diveVelocity.magnitude);
         }
 
         // if (ragdoll)
@@ -392,7 +393,6 @@ public class PlayerMovement : MonoBehaviour
                 timeSinceJump = 0;
                 timeSinceOnGround = 0;
                 timeSinceJumpPressed = Mathf.Infinity;
-                Debug.Log("Jump");
             }
             else if (attemptingJump && diving && timeSinceDive <= chainActionBuffer && timeSinceOnGround <= chainActionBuffer + coyoteTime)
             {
@@ -400,8 +400,6 @@ public class PlayerMovement : MonoBehaviour
                 verticalVelocity += jumpDivePower.y - divePower.y;
                 timeSinceJump = 0;
                 timeSinceJumpPressed = Mathf.Infinity;
-
-                Debug.Log("Jump chain from dive");
             }
             else if (attemptingJump && diving && timeSinceDive > chainActionBuffer && timeSinceDiveReady <= coyoteTime && !sliding)
             {
@@ -410,8 +408,6 @@ public class PlayerMovement : MonoBehaviour
                 diveVelocity += diveDirection * divingJumpPower.x;
                 timeSinceJump = 0;
                 timeSinceJumpPressed = Mathf.Infinity;
-
-                Debug.Log("Jump while diving");
             }
 
             bool attemptingDive = timeSinceDivePressed <= jumpBufferTime;
@@ -424,8 +420,6 @@ public class PlayerMovement : MonoBehaviour
                 timeSinceDive = 0;
                 timeSinceOnGround = 0;
                 timeSinceDivePressed = Mathf.Infinity;
-
-                Debug.Log("Dive");
             }
             else if (attemptingDive && !diving && timeSinceJump <= chainActionBuffer && timeSinceOnGround <= chainActionBuffer + coyoteTime)
             {
@@ -434,7 +428,6 @@ public class PlayerMovement : MonoBehaviour
                 diveVelocity += diveDirection * divePower.x;
                 timeSinceDive = 0;
                 timeSinceDivePressed = Mathf.Infinity;
-                Debug.Log("Dive chain from jump");
             }
 
             // If you crouch and dive at the same time on the ground, you will slide
@@ -446,7 +439,6 @@ public class PlayerMovement : MonoBehaviour
                 timeSinceCrouchPressed = Mathf.Infinity;
                 slideVelocity = horizontalRunVelocity + diveVelocity;
                 sliding = true;
-                Debug.Log("Slide!");
             }
             if (!pressingDive && sliding)
             {
@@ -535,10 +527,11 @@ public class PlayerMovement : MonoBehaviour
                 break;
             }
 
+            playerTackle.CollideWithObject(hit.collider);
+
             // If we are overlapping with something, just exit.
             if (hit.distance == 0)
             {
-                Debug.Log("inside object");
                 break;
             }
 
@@ -697,5 +690,10 @@ public class PlayerMovement : MonoBehaviour
 
         capsuleCollider.height += heightChange;
         capsuleCollider.center = new Vector3(0f, anchorOffset + (fullHeight + fullHeight - capsuleCollider.height) / 2, 0f);
+    }
+
+    public bool CanTackle()
+    {
+        return diving;
     }
 }
