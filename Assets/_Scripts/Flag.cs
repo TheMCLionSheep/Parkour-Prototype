@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using FishNet.Object;
 using GameKit.Dependencies.Utilities;
+using FishNet.Connection;
 
 public class Flag : NetworkBehaviour
 {
@@ -21,9 +22,26 @@ public class Flag : NetworkBehaviour
         
     }
 
-    public void AttachToPlayer(Transform player)
+    [ServerRpc(RequireOwnership = false)]
+    public void AttachToPlayerServer(GameObject player, NetworkConnection conn = null)
     {
-        transform.SetParent(player, false);
+        // If the flag is not owned by a player yet
+        if (base.HasAuthority)
+        {
+            this.GiveOwnership(conn);
+            AttachToPlayer(player);
+        }
+    }
+
+    [ObserversRpc(ExcludeOwner = true)]
+    private void AttachToPlayerObserver(GameObject player)
+    {
+        AttachToPlayer(player);
+    }
+
+    public void AttachToPlayer(GameObject player)
+    {
+        transform.SetParent(player.transform, false);
         transform.localPosition = Vector3.zero;
         capsuleCollider.isTrigger = true;
         transform.localScale = Vector3.one * 0.5f;   

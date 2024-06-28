@@ -8,7 +8,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/MultiplayerTestScene.unity
     guid: 05d24197911d9354d92043d0d5ccfaf9
+  - enabled: 1
+    path: Assets/Scenes/CTFTestScene.unity
+    guid: 6feff84a3595c5044a62313679a66923
   m_configObjects: {}

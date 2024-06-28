@@ -6,7 +6,8 @@ using UnityEngine;
 
 public class PlayerTackle : NetworkBehaviour
 {
-    [SerializeField] private Transform flagHolder;
+    [SerializeField] private GameObject flagHolder;
+
     PlayerMovement playerMovement;
     public void Start()
     {
@@ -14,11 +15,13 @@ public class PlayerTackle : NetworkBehaviour
     }
     public void CollideWithObject(Collider other)
     {
+        if (!base.IsOwner) return;
         if (other.gameObject.tag == "Flag" && playerMovement.CanTackle())
         {
             Flag flag = other.gameObject.GetComponent<Flag>();
 
             flag.AttachToPlayer(flagHolder);
+            flag.AttachToPlayerServer(flagHolder);
         }
     }
 }
