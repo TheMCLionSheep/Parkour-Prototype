@@ -29,7 +29,12 @@ public class Flag : NetworkBehaviour
         if (base.HasAuthority)
         {
             this.GiveOwnership(conn);
-            AttachToPlayer(player);
+            AttachToPlayerObserver(player);
+        }
+        else
+        {
+            Debug.Log("Ownership failed");
+            //Debug.Log(base.Owner);
         }
     }
 
