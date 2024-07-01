@@ -59,10 +59,15 @@ public class RagdollController : MonoBehaviour
 
     public void ApplyForceOnRagdoll(Vector3 force)
     {
-        Debug.Log(force);
         foreach (Rigidbody rb in ragdollRigidbodies)
         {
             rb.AddForce(force, ForceMode.Impulse);
         }
+    }
+
+    public float GetRagdollVelocity()
+    {
+        Debug.Log(characterRig.GetComponentInChildren<Rigidbody>().velocity.magnitude);
+        return characterRig.GetComponentInChildren<Rigidbody>().velocity.magnitude;
     }
 }

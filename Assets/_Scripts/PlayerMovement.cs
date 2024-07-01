@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FishNet.Object;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : NetworkBehaviour
 {
     public const float minPitch = -90f;
     public const float maxPitch = 70f;
@@ -70,6 +71,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform playerModel;
     [SerializeField] private GameObject handprintDecal;
     [SerializeField] private GameObject playerRagdollCamera;
+
+    private bool isControllingPlayer = false;
 
     private Vector2 cameraAngle;
     private Vector2 cameraAngleAccumulator;
@@ -136,8 +139,22 @@ public class PlayerMovement : MonoBehaviour
         decalProjector.fadeFactor = 0f;
     }
 
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        if (base.IsOwner)
+        {
+            EnableCamera();
+        }
+        else
+        {
+            this.enabled = false;
+        }
+    }
+
     public void EnableCamera()
     {
+        isControllingPlayer = true;
         playerCamera.gameObject.SetActive(true);
     }
 
@@ -333,13 +350,6 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        // if (ragdoll)
-        // {
-        //     // Apply a constant stopping velocity to the player's slide movement to slow the player down.
-        //     ragdollVelocity = CalculateDrag(ragdollVelocity,ragdollDrag);
-
-        //     movement = new Vector3(ragdollVelocity.x, 0f, ragdollVelocity.y);
-        // }
         if (sliding)
         {
             // Apply a constant stopping velocity to the player's slide movement to slow the player down.
@@ -453,12 +463,10 @@ public class PlayerMovement : MonoBehaviour
             // If in ragdoll, and hit jump, leave the ragdoll
             bool attemptingJump = timeSinceJumpPressed <= jumpBufferTime;
 
-            if (attemptingJump && ragdollVelocity.magnitude < ragdollControlSpeed)
+            if (attemptingJump && ragdollController.GetRagdollVelocity() < ragdollControlSpeed)
             {
-                ragdoll = false;
-                diving = false;
-                playerCamera.gameObject.SetActive(true);
-                playerRagdollCamera.SetActive(false);
+                DisableRagdoll();
+                DisableRagdollServer();
             }
         }
 
@@ -704,5 +712,33 @@ public class PlayerMovement : MonoBehaviour
         ragdoll = true;
         ragdollController.EnableRagdoll();
         ragdollController.ApplyForceOnRagdoll(new Vector3(collisionForce.x, 0f, collisionForce.z));
+        if (isControllingPlayer)
+        {
+            playerCamera.gameObject.SetActive(false);
+            playerRagdollCamera.SetActive(true);
+        }
+    }
+
+    [ServerRpc]
+    private void DisableRagdollServer()
+    {
+        DisableRagdollObserver();
+    }
+
+    [ObserversRpc(ExcludeOwner = true)]
+    private void DisableRagdollObserver()
+    {
+        DisableRagdoll();
+    }
+
+    private void DisableRagdoll()
+    {
+        ragdoll = false;
+        ragdollController.DisableRagdoll();
+        if (isControllingPlayer)
+        {
+            playerCamera.gameObject.SetActive(true);
+            playerRagdollCamera.SetActive(false);
+        }
     }
 }

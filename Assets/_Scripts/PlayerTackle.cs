@@ -25,7 +25,7 @@ public class PlayerTackle : NetworkBehaviour
             flag.AttachToPlayer(flagHolder);
             flag.AttachToPlayerServer(flagHolder);
         }
-        Debug.Log(other.gameObject.tag);
+
         if (other.gameObject.tag == "Player" && playerMovement.CanTackle())
         {
             other.gameObject.GetComponent<PlayerTackle>().TacklePlayerServer(collisionForce * tackleForce);
