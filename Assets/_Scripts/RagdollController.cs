@@ -4,10 +4,13 @@ using UnityEngine;
 
 public class RagdollController : MonoBehaviour
 {
+    [SerializeField] GameObject characterRoot;
     [SerializeField] GameObject characterRig;
     [SerializeField] Collider mainCollider;
     [SerializeField] Animator animator;
 
+    [SerializeField] float respawnHeight = 1.1f;
+    
     Collider[] ragdollColliders;
     Rigidbody[] ragdollRigidbodies;
 
@@ -54,6 +57,9 @@ public class RagdollController : MonoBehaviour
         }
 
         mainCollider.enabled = true;
+
+        characterRoot.transform.position = characterRig.transform.GetChild(0).position + (Vector3.up * respawnHeight);
+
         animator.enabled = true;
     }
 
