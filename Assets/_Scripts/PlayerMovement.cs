@@ -110,6 +110,7 @@ public class PlayerMovement : MonoBehaviour
     private CapsuleCollider capsuleCollider;
     private DecalProjector decalProjector;
     private PlayerTackle playerTackle;
+    private RagdollController ragdollController;
 
     // Start is called before the first frame update
     void Awake()
@@ -118,6 +119,7 @@ public class PlayerMovement : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
         capsuleCollider = playerBody.GetComponent<CapsuleCollider>();
         playerTackle = playerBody.GetComponent<PlayerTackle>();
+        ragdollController = playerBody.GetComponent<RagdollController>();
 
         lookAction = playerInput.actions.FindAction("Look");
         moveAction = playerInput.actions.FindAction("Move");
@@ -353,8 +355,7 @@ public class PlayerMovement : MonoBehaviour
             movement = new Vector3(horizontalRunVelocity.x + diveVelocity.x, 0f, horizontalRunVelocity.y + diveVelocity.y);   
         }
 
-        transform.position = MovePlayer(movement * Time.deltaTime);
-        transform.position = MovePlayer(verticalVelocity * Time.deltaTime * Vector3.up);
+        transform.position = MovePlayer((movement + (verticalVelocity * Vector3.up)) * Time.deltaTime);
     }
 
     private void HandleActions(Vector2 diveDirection)
@@ -527,11 +528,12 @@ public class PlayerMovement : MonoBehaviour
                 break;
             }
 
-            playerTackle.CollideWithObject(hit.collider);
+            playerTackle.CollideWithObject(hit.collider, movement / Time.deltaTime);
 
             // If we are overlapping with something, just exit.
             if (hit.distance == 0)
             {
+                Debug.Log("Inside");
                 break;
             }
 
@@ -695,5 +697,12 @@ public class PlayerMovement : MonoBehaviour
     public bool CanTackle()
     {
         return diving;
+    }
+
+    public void EnableRagdoll(Vector3 collisionForce)
+    {
+        ragdoll = true;
+        ragdollController.EnableRagdoll();
+        ragdollController.ApplyForceOnRagdoll(new Vector3(collisionForce.x, 0f, collisionForce.z));
     }
 }

@@ -7,13 +7,14 @@ using UnityEngine;
 public class PlayerTackle : NetworkBehaviour
 {
     [SerializeField] private GameObject flagHolder;
+    [SerializeField] private float tackleForce = 5f;
 
     PlayerMovement playerMovement;
     public void Start()
     {
         playerMovement = transform.parent.gameObject.GetComponent<PlayerMovement>();
     }
-    public void CollideWithObject(Collider other)
+    public void CollideWithObject(Collider other, Vector3 collisionForce)
     {
         if (!base.IsOwner) return;
         if (other.gameObject.tag == "Flag" && playerMovement.CanTackle())
@@ -22,6 +23,11 @@ public class PlayerTackle : NetworkBehaviour
 
             flag.AttachToPlayer(flagHolder);
             flag.AttachToPlayerServer(flagHolder);
+        }
+        Debug.Log(other.gameObject.tag);
+        if (other.gameObject.tag == "Player" && playerMovement.CanTackle())
+        {
+            other.transform.parent.GetComponent<PlayerMovement>().EnableRagdoll(collisionForce * tackleForce);
         }
     }
 }
