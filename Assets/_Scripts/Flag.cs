@@ -16,12 +16,6 @@ public class Flag : NetworkBehaviour
         capsuleCollider = GetComponent<CapsuleCollider>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     [ServerRpc(RequireOwnership = false)]
     public void AttachToPlayerServer(GameObject player, NetworkConnection conn = null)
     {
