@@ -205,6 +205,7 @@ GameObject:
   - component: {fileID: 9138553827790420217}
   - component: {fileID: 7948087436743643495}
   - component: {fileID: 6715681884679647864}
+  - component: {fileID: 57950275987711134}
   m_Layer: 0
   m_Name: PlayerPrefab
   m_TagString: Untagged
@@ -344,7 +345,7 @@ MonoBehaviour:
   walkAcceleration: 40
   walkDeceleration: 30
   groundDist: 0.01
-  maxWalkingAngle: 60
+  maxWalkingAngle: 45
   anglePower: 0.25
   jumpPower: 7
   divePower: {x: 0, y: 5}
@@ -493,6 +494,19 @@ MonoBehaviour:
     X: 0
     Y: 0
     Z: 0
+--- !u!114 &57950275987711134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 442205924411176452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6be36e59eed2904c82a86c48ed666c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  voidLevel: 5
 --- !u!1 &443160434809940857
 GameObject:
   m_ObjectHideFlags: 0

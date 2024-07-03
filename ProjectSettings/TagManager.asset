@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Fire
   - Flag
+  - RedSpawn
+  - BlueSpawn
   layers:
   - Default
   - TransparentFX
