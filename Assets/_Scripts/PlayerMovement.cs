@@ -114,6 +114,7 @@ public class PlayerMovement : NetworkBehaviour
     private DecalProjector decalProjector;
     private PlayerTackle playerTackle;
     private RagdollController ragdollController;
+    private PlayerAnimator playerAnimator;
 
     // Start is called before the first frame update
     void Awake()
@@ -123,6 +124,7 @@ public class PlayerMovement : NetworkBehaviour
         capsuleCollider = playerBody.GetComponent<CapsuleCollider>();
         playerTackle = playerBody.GetComponent<PlayerTackle>();
         ragdollController = playerBody.GetComponent<RagdollController>();
+        playerAnimator = GetComponent<PlayerAnimator>();
 
         lookAction = playerInput.actions.FindAction("Look");
         moveAction = playerInput.actions.FindAction("Move");
@@ -419,6 +421,7 @@ public class PlayerMovement : NetworkBehaviour
                 diveVelocity += diveDirection * divingJumpPower.x;
                 timeSinceJump = 0;
                 timeSinceJumpPressed = Mathf.Infinity;
+                playerAnimator.AnimateJumpInDive();
             }
 
             bool attemptingDive = timeSinceDivePressed <= jumpBufferTime;
