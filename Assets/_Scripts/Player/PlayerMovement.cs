@@ -712,14 +712,16 @@ public class PlayerMovement : NetworkBehaviour
 
     public void EnableRagdoll(Vector3 collisionForce)
     {
-        ragdoll = true;
-        ragdollController.EnableRagdoll();
-        ragdollController.ApplyForceOnRagdoll(new Vector3(collisionForce.x, 0f, collisionForce.z));
         if (isControllingPlayer)
         {
+            playerAnimator.ToggleView(false);
             playerCamera.gameObject.SetActive(false);
             playerRagdollCamera.SetActive(true);
         }
+
+        ragdoll = true;
+        ragdollController.EnableRagdoll();
+        ragdollController.ApplyForceOnRagdoll(new Vector3(collisionForce.x, 0f, collisionForce.z));
     }
 
     [ServerRpc]
@@ -736,12 +738,13 @@ public class PlayerMovement : NetworkBehaviour
 
     private void DisableRagdoll()
     {
-        ragdoll = false;
-        ragdollController.DisableRagdoll();
         if (isControllingPlayer)
         {
+            playerAnimator.ToggleView(true);
             playerCamera.gameObject.SetActive(true);
             playerRagdollCamera.SetActive(false);
         }
+        ragdoll = false;
+        ragdollController.DisableRagdoll();
     }
 }

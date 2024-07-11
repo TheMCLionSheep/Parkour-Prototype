@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using FishNet.Object;
 using UnityEngine;
 
@@ -33,5 +31,11 @@ public class PlayerAnimator : NetworkBehaviour
     public void AnimateJumpInDive()
     {
         armAnimator.SetTrigger("Push");
+    }
+
+    public void ToggleView(bool firstPerson)
+    {
+        playerBody.SetActive(!firstPerson);
+        playerArms.SetActive(firstPerson);
     }
 }
