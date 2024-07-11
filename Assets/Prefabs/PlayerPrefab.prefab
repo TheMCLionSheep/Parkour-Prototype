@@ -379,6 +379,7 @@ MonoBehaviour:
   maxImpactVelocity: 20
   impactRecovery: 150
   impactToHeight: 0.7
+  voidLevel: 5
   playerCamera: {fileID: 1125577090835398522}
   playerBody: {fileID: 488549757660853215}
   playerModel: {fileID: 7189300031429758400}
@@ -525,7 +526,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6be36e59eed2904c82a86c48ed666c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  voidLevel: 5
 --- !u!1 &443160434809940857
 GameObject:
   m_ObjectHideFlags: 0

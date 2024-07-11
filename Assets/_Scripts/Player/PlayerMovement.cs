@@ -66,6 +66,8 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private float impactRecovery = 1;
     [SerializeField] private float impactToHeight = 1;
 
+    [SerializeField] private float voidLevel;
+
     [SerializeField] private Transform playerCamera;
     [SerializeField] private Transform playerBody;
     [SerializeField] private Transform playerModel;
@@ -115,6 +117,7 @@ public class PlayerMovement : NetworkBehaviour
     private PlayerTackle playerTackle;
     private RagdollController ragdollController;
     private PlayerAnimator playerAnimator;
+    private PlayerSpawn playerSpawn;
 
     // Start is called before the first frame update
     void Awake()
@@ -125,6 +128,7 @@ public class PlayerMovement : NetworkBehaviour
         playerTackle = playerBody.GetComponent<PlayerTackle>();
         ragdollController = playerBody.GetComponent<RagdollController>();
         playerAnimator = GetComponent<PlayerAnimator>();
+        playerSpawn = GetComponent<PlayerSpawn>();
 
         lookAction = playerInput.actions.FindAction("Look");
         moveAction = playerInput.actions.FindAction("Move");
@@ -264,6 +268,8 @@ public class PlayerMovement : NetworkBehaviour
             }
             else if (-verticalVelocity > maxImpactVelocity)
             {
+                EnableRagdollServer();
+                EnableRagdoll(Vector3.down);
                 Debug.Log("Too much landing impact! " + -verticalVelocity);
             }
 
@@ -368,6 +374,13 @@ public class PlayerMovement : NetworkBehaviour
         }
 
         transform.position = MovePlayer((movement + (verticalVelocity * Vector3.up)) * Time.deltaTime);
+
+        if (transform.position.y <= voidLevel)
+        {
+            verticalVelocity = 0;
+            landingVelocity = 0;
+            playerSpawn.RespawnPlayer();
+        }
     }
 
     private void HandleActions(Vector2 diveDirection)
@@ -710,6 +723,18 @@ public class PlayerMovement : NetworkBehaviour
         return diving;
     }
 
+    [ServerRpc]
+    private void EnableRagdollServer()
+    {
+        EnableRagdollObserver();
+    }
+
+    [ObserversRpc(ExcludeOwner = true)]
+    private void EnableRagdollObserver()
+    {
+        EnableRagdoll(Vector3.down);
+    }
+
     public void EnableRagdoll(Vector3 collisionForce)
     {
         if (isControllingPlayer)
@@ -721,7 +746,7 @@ public class PlayerMovement : NetworkBehaviour
 
         ragdoll = true;
         ragdollController.EnableRagdoll();
-        ragdollController.ApplyForceOnRagdoll(new Vector3(collisionForce.x, 0f, collisionForce.z));
+        ragdollController.ApplyForceOnRagdoll(collisionForce);
     }
 
     [ServerRpc]

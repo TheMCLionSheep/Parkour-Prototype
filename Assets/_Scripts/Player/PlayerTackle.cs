@@ -28,8 +28,9 @@ public class PlayerTackle : NetworkBehaviour
 
         if (other.gameObject.tag == "Player" && playerMovement.CanTackle())
         {
-            other.gameObject.GetComponent<PlayerTackle>().TacklePlayerServer(collisionForce * tackleForce);
-            other.transform.parent.GetComponent<PlayerMovement>().EnableRagdoll(collisionForce * tackleForce);
+            Vector3 newCollision = new Vector3(collisionForce.x * tackleForce, 0f, collisionForce.z * tackleForce);
+            other.gameObject.GetComponent<PlayerTackle>().TacklePlayerServer(newCollision);
+            other.transform.parent.GetComponent<PlayerMovement>().EnableRagdoll(newCollision);
         }
     }
 
