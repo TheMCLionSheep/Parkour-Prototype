@@ -5,6 +5,7 @@ public class PlayerAnimator : NetworkBehaviour
 {
     [SerializeField] private GameObject playerBody;
     [SerializeField] private GameObject playerArms;
+    [SerializeField] private GameObject playerBodyMesh;
 
     private Animator bodyAnimator;
     private Animator armAnimator;
@@ -20,7 +21,7 @@ public class PlayerAnimator : NetworkBehaviour
         base.OnStartClient();
         if (base.IsOwner)
         {
-            playerBody.SetActive(false);
+            playerBodyMesh.SetActive(false);
         }
         else
         {
@@ -35,7 +36,7 @@ public class PlayerAnimator : NetworkBehaviour
 
     public void ToggleView(bool firstPerson)
     {
-        playerBody.SetActive(!firstPerson);
+        playerBodyMesh.SetActive(!firstPerson);
         playerArms.SetActive(firstPerson);
     }
 }

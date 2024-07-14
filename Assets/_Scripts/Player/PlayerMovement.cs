@@ -104,6 +104,8 @@ public class PlayerMovement : NetworkBehaviour
     private Vector2 ragdollVelocity;
 
     private float landingVelocity = 0;
+
+    private Vector3 lastGroundedPosition;
     
     private PlayerInput playerInput;
     private InputAction moveAction;
@@ -261,6 +263,8 @@ public class PlayerMovement : NetworkBehaviour
         }
         else // If on ground, calculate impact force and reset vertical velocity
         {
+            lastGroundedPosition = transform.position;
+
             if (timeSinceOnGround > 0f && minImpactVelocity <= -verticalVelocity && -verticalVelocity <= maxImpactVelocity)
             {
                 landingVelocity = verticalVelocity;
@@ -379,6 +383,7 @@ public class PlayerMovement : NetworkBehaviour
         {
             verticalVelocity = 0;
             landingVelocity = 0;
+            playerTackle.DropPlayerFlag();
             playerSpawn.RespawnPlayer();
         }
     }
@@ -723,6 +728,11 @@ public class PlayerMovement : NetworkBehaviour
         return diving;
     }
 
+    public Vector3 GetLastGroundedPosition()
+    {
+        return lastGroundedPosition;
+    }
+
     [ServerRpc]
     private void EnableRagdollServer()
     {
@@ -763,13 +773,14 @@ public class PlayerMovement : NetworkBehaviour
 
     private void DisableRagdoll()
     {
+        ragdoll = false;
+        ragdollController.DisableRagdoll();
+
         if (isControllingPlayer)
         {
             playerAnimator.ToggleView(true);
             playerCamera.gameObject.SetActive(true);
             playerRagdollCamera.SetActive(false);
         }
-        ragdoll = false;
-        ragdollController.DisableRagdoll();
     }
 }

@@ -354,7 +354,7 @@ MonoBehaviour:
   divingJumpPower: {x: 4, y: 8}
   slidingPower: {x: 2, y: 0}
   chainActionBuffer: 0.05
-  coyoteTime: 0.05
+  coyoteTime: 0.1
   jumpBufferTime: 0.1
   reuseDelay: 0.1
   slideDelay: 0.1
@@ -514,6 +514,7 @@ MonoBehaviour:
   _networkObjectCache: {fileID: 7948087436743643495}
   playerBody: {fileID: 1931805718371335628}
   playerArms: {fileID: 5755959926885366471}
+  playerBodyMesh: {fileID: 4915097077852040977}
 --- !u!114 &5213618534295737635
 MonoBehaviour:
   m_ObjectHideFlags: 0

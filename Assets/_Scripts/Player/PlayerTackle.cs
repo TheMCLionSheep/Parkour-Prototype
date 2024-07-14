@@ -10,7 +10,9 @@ public class PlayerTackle : NetworkBehaviour
     [SerializeField] private GameObject flagHolder;
     [SerializeField] private float tackleForce = 5f;
 
+    private Flag flagInPossession;
     PlayerMovement playerMovement;
+
     public void Start()
     {
         playerMovement = transform.parent.gameObject.GetComponent<PlayerMovement>();
@@ -20,10 +22,12 @@ public class PlayerTackle : NetworkBehaviour
         if (!base.IsOwner) return;
         if (other.gameObject.tag == "Flag" && playerMovement.CanTackle())
         {
+            DropPlayerFlag();
+            
             Flag flag = other.gameObject.GetComponent<Flag>();
 
-            flag.AttachToPlayer(flagHolder);
-            flag.AttachToPlayerServer(flagHolder);
+            flag.AttachToPlayer(gameObject);
+            flag.AttachToPlayerServer(gameObject);
         }
 
         if (other.gameObject.tag == "Player" && playerMovement.CanTackle())
@@ -31,6 +35,24 @@ public class PlayerTackle : NetworkBehaviour
             Vector3 newCollision = new Vector3(collisionForce.x * tackleForce, 0f, collisionForce.z * tackleForce);
             other.gameObject.GetComponent<PlayerTackle>().TacklePlayerServer(newCollision);
             other.transform.parent.GetComponent<PlayerMovement>().EnableRagdoll(newCollision);
+        }
+    }
+
+    public GameObject GetFlagHolder()
+    {
+        return flagHolder;
+    }
+
+    public void OwnFlag(Flag newFlag)
+    {
+        flagInPossession = newFlag;
+    }
+
+    public void DropPlayerFlag()
+    {
+        if (flagInPossession != null)
+        {
+            flagInPossession.DropFromPlayerServer(transform.parent.GetComponent<PlayerMovement>().GetLastGroundedPosition());
         }
     }
 
@@ -47,6 +69,8 @@ public class PlayerTackle : NetworkBehaviour
         {
             Debug.Log("Tackle via network!");
             transform.parent.GetComponent<PlayerMovement>().EnableRagdoll(collisionForce);
+
+            DropPlayerFlag();
         }
     }
 }
