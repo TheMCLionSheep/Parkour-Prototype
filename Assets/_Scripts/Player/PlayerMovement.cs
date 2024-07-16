@@ -116,7 +116,7 @@ public class PlayerMovement : NetworkBehaviour
 
     private CapsuleCollider capsuleCollider;
     private DecalProjector decalProjector;
-    private PlayerTackle playerTackle;
+    private PlayerCTFController playerCTFController;
     private RagdollController ragdollController;
     private PlayerAnimator playerAnimator;
     private PlayerSpawn playerSpawn;
@@ -127,7 +127,7 @@ public class PlayerMovement : NetworkBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         playerInput = GetComponent<PlayerInput>();
         capsuleCollider = playerBody.GetComponent<CapsuleCollider>();
-        playerTackle = playerBody.GetComponent<PlayerTackle>();
+        playerCTFController = playerBody.GetComponent<PlayerCTFController>();
         ragdollController = playerBody.GetComponent<RagdollController>();
         playerAnimator = GetComponent<PlayerAnimator>();
         playerSpawn = GetComponent<PlayerSpawn>();
@@ -383,7 +383,7 @@ public class PlayerMovement : NetworkBehaviour
         {
             verticalVelocity = 0;
             landingVelocity = 0;
-            playerTackle.DropPlayerFlag();
+            playerCTFController.DropPlayerFlag();
             playerSpawn.RespawnPlayer();
         }
     }
@@ -557,7 +557,7 @@ public class PlayerMovement : NetworkBehaviour
                 break;
             }
 
-            playerTackle.CollideWithObject(hit.collider, movement / Time.deltaTime);
+            playerCTFController.CollideWithObject(hit.collider, movement / Time.deltaTime);
 
             // If we are overlapping with something, just exit.
             if (hit.distance == 0)
@@ -616,6 +616,12 @@ public class PlayerMovement : NetworkBehaviour
     {
         bool onGround = CastSelf(transform.position, transform.rotation, Vector3.down, groundDist, out groundHit);
         float angle = Vector3.Angle(groundHit.normal, Vector3.up);
+
+        if (onGround)
+        {
+            playerCTFController.CheckOnCaptureZone(groundHit.transform);
+        }
+
         return onGround && angle < maxWalkingAngle;
     }
 

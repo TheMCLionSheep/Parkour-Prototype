@@ -8,7 +8,7 @@ using System.Linq;
 
 public class Flag : NetworkBehaviour
 {
-    [SerializeField] private bool teamColor;
+    [SerializeField] private bool teamColor; // True is red, false is blue
     
     [SerializeField] private float groundDist = 0.01f;
     [SerializeField] private float gravity = -25;
@@ -37,6 +37,11 @@ public class Flag : NetworkBehaviour
         MoveDown();
     }
 
+    public bool GetTeam()
+    {
+        return teamColor;
+    }
+
     [ServerRpc(RequireOwnership = false)]
     public void AttachToPlayerServer(GameObject player, NetworkConnection conn = null)
     {
@@ -60,7 +65,7 @@ public class Flag : NetworkBehaviour
 
     public void AttachToPlayer(GameObject player)
     {
-        PlayerTackle playerTackle = player.GetComponent<PlayerTackle>();
+        PlayerCTFController playerTackle = player.GetComponent<PlayerCTFController>();
         playerTackle.OwnFlag(this);
 
         transform.SetParent(playerTackle.GetFlagHolder().transform, false);
@@ -87,7 +92,8 @@ public class Flag : NetworkBehaviour
         transform.SetParent(null);
         transform.position = dropPosition + Vector3.up * respawnHeight;
         capsuleCollider.isTrigger = false;
-        transform.localScale = Vector3.one;   
+        transform.localScale = Vector3.one;
+        transform.localRotation = Quaternion.identity;  
     }
 
     private void MoveDown()

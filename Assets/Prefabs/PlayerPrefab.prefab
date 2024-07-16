@@ -338,8 +338,8 @@ MonoBehaviour:
   _componentIndexCache: 0
   _addedNetworkObject: {fileID: 7948087436743643495}
   _networkObjectCache: {fileID: 7948087436743643495}
-  mouseSensitivity: 4
-  mouseSnappiness: 32
+  mouseSensitivity: 0.1
+  mouseSnappiness: 50
   maxSpeed: 7.5
   runAcceleration: 50
   runDeceleration: 30
@@ -360,7 +360,7 @@ MonoBehaviour:
   reuseDelay: 0.1
   slideDelay: 0.1
   ragdollDelay: 0.1
-  ragdollControlSpeed: 3
+  ragdollControlSpeed: 1
   diveAngleSpeed: 200
   maxDiveAngle: 90
   maxDiveCameraAngle: 45

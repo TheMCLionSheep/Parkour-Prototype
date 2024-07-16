@@ -8,6 +8,8 @@ TagManager:
   - Flag
   - RedSpawn
   - BlueSpawn
+  - RedCaptureZone
+  - BlueCaptureZone
   layers:
   - Default
   - TransparentFX
