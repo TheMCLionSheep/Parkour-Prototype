@@ -15,6 +15,7 @@ public class Flag : NetworkBehaviour
     [SerializeField] private float respawnHeight = 5f;
 
     private Vector3 flagSpawn;
+    private bool isAttached = false;
     private float verticalVelocity = 0f;
     CapsuleCollider capsuleCollider;
 
@@ -49,9 +50,10 @@ public class Flag : NetworkBehaviour
     public void AttachToPlayerServer(GameObject player, NetworkConnection conn = null)
     {
         // If the flag is not owned by a player yet
-        if (base.HasAuthority)
+        if (base.HasAuthority && !isAttached)
         {
             this.GiveOwnership(conn);
+            isAttached = true;
             AttachToPlayerObserver(player);
         }
         else
@@ -78,20 +80,41 @@ public class Flag : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = true)]
+    public void ScoreFlagServer(bool team, GameObject player, NetworkConnection conn = null)
+    {
+        if (isAttached)
+        {
+            isAttached = false;
+            CTFManager.Instance.AddPoint(team);
+            DropFromPlayerObserver(flagSpawn, player);
+            this.RemoveOwnership();
+        }
+        
+    }
+
+    [ServerRpc(RequireOwnership = true)]
     public void RespawnFlagServer(GameObject player, NetworkConnection conn = null)
     {
-        DropFromPlayerObserver(flagSpawn, player);
-        this.RemoveOwnership();
+        if (isAttached)
+        {
+            isAttached = false;
+            DropFromPlayerObserver(flagSpawn, player);
+            this.RemoveOwnership();
+        }
     }
 
     [ServerRpc(RequireOwnership = true)]
     public void DropFromPlayerServer(Vector3 dropPosition, GameObject player, NetworkConnection conn = null)
     {
-        DropFromPlayerObserver(dropPosition, player);
-        this.RemoveOwnership();
+        if (isAttached)
+        {
+            isAttached = false;
+            DropFromPlayerObserver(dropPosition, player);
+            this.RemoveOwnership();
+        }
     }
 
-    [ObserversRpc(ExcludeOwner = true)]
+    [ObserversRpc]
     private void DropFromPlayerObserver(Vector3 dropPosition, GameObject player)
     {
         DropFromPlayer(dropPosition, player);

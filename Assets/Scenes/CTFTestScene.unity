@@ -3884,7 +3884,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3383213398455890992, guid: cc5ddc6915375db43bb27ef92f34da31, type: 3}
       propertyPath: <SceneId>k__BackingField
-      value: 4227832399
+      value: 4118806215
+      objectReference: {fileID: 0}
+    - target: {fileID: 6814052597523868925, guid: cc5ddc6915375db43bb27ef92f34da31, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6814052597524004877, guid: cc5ddc6915375db43bb27ef92f34da31, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6814052597524035573, guid: cc5ddc6915375db43bb27ef92f34da31, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7308981693885482461, guid: cc5ddc6915375db43bb27ef92f34da31, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3927,7 +3939,9 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 6814052597524004877, guid: cc5ddc6915375db43bb27ef92f34da31, type: 3}
+    - {fileID: 6814052597524035573, guid: cc5ddc6915375db43bb27ef92f34da31, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cc5ddc6915375db43bb27ef92f34da31, type: 3}
@@ -9115,7 +9129,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1381227907492093125, guid: bd5e4355c07d34440ac8e397dc873e0f, type: 3}
       propertyPath: <SceneId>k__BackingField
-      value: 3179150183
+      value: 3179256399
       objectReference: {fileID: 0}
     - target: {fileID: 2839776610437078407, guid: bd5e4355c07d34440ac8e397dc873e0f, type: 3}
       propertyPath: m_LocalPosition.x
@@ -9157,12 +9171,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3385309389890608204, guid: bd5e4355c07d34440ac8e397dc873e0f, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8008123356030140105, guid: bd5e4355c07d34440ac8e397dc873e0f, type: 3}
       propertyPath: m_Name
       value: Blue Totem Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 8928465678444542474, guid: bd5e4355c07d34440ac8e397dc873e0f, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 8928465678444556614, guid: bd5e4355c07d34440ac8e397dc873e0f, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bd5e4355c07d34440ac8e397dc873e0f, type: 3}
@@ -18386,6 +18409,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1635701062}
+  - component: {fileID: 1635701064}
+  - component: {fileID: 1635701063}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -18408,6 +18433,67 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1635701063
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1635701061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <IsNested>k__BackingField: 0
+  <ComponentIndex>k__BackingField: 0
+  <PredictedSpawn>k__BackingField: {fileID: 0}
+  _networkBehaviours:
+  - {fileID: 1635701064}
+  <SerializedRootNetworkBehaviour>k__BackingField: {fileID: 0}
+  <NestedRootNetworkBehaviours>k__BackingField: []
+  SerializedTransformProperties:
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    LocalScale: {x: 1, y: 1, z: 1}
+  _isNetworked: 1
+  _isSpawnable: 1
+  _isGlobal: 0
+  _initializeOrder: 0
+  _defaultDespawnType: 0
+  NetworkObserver: {fileID: 0}
+  _enablePrediction: 0
+  _predictionType: 0
+  _graphicalObject: {fileID: 0}
+  _detachGraphicalObject: 0
+  _enableStateForwarding: 1
+  _networkTransform: {fileID: 0}
+  _ownerInterpolation: 1
+  _ownerSmoothedProperties: 255
+  _adaptiveInterpolation: 3
+  _spectatorSmoothedProperties: 255
+  _spectatorInterpolation: 2
+  _enableTeleport: 0
+  _teleportThreshold: 1
+  <PrefabId>k__BackingField: 0
+  <SpawnableCollectionId>k__BackingField: 0
+  <SceneId>k__BackingField: 3212820055
+  <AssetPathHash>k__BackingField: 0
+--- !u!114 &1635701064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1635701061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b98de0b6fd087aa4891712a5a2591684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 0
+  _addedNetworkObject: {fileID: 1635701063}
+  _networkObjectCache: {fileID: 1635701063}
 --- !u!43 &1637578025
 Mesh:
   m_ObjectHideFlags: 0
@@ -23111,6 +23197,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1607287602}
+    - target: {fileID: 888734461495980602, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: f5ffb23c71776424f8f776c97d3fd190, type: 2}
     - target: {fileID: 904121994558676102, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -26060,7 +26150,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3758189540570035795, guid: 2576e3a1117c90849b91fa630c9d2b87, type: 3}
       propertyPath: <SceneId>k__BackingField
-      value: 4185758423
+      value: 4252868551
       objectReference: {fileID: 0}
     - target: {fileID: 5395422128226526436, guid: 2576e3a1117c90849b91fa630c9d2b87, type: 3}
       propertyPath: m_LocalPosition.x
@@ -26104,7 +26194,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7948087436743643495, guid: 2576e3a1117c90849b91fa630c9d2b87, type: 3}
       propertyPath: <SceneId>k__BackingField
-      value: 4118666831
+      value: 3179256783
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -26232,6 +26322,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 925110941}
+    - target: {fileID: 888734461495980602, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 5e88a93148f69984e968ecc92408960f, type: 2}
     - target: {fileID: 904121994558676102, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_Mesh
       value: 

@@ -1,9 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using FishNet.Connection;
 using FishNet.Object;
-using Unity.VisualScripting;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class PlayerCTFController : NetworkBehaviour
@@ -57,56 +53,37 @@ public class PlayerCTFController : NetworkBehaviour
     {
         if (flagInPossession != null)
         {
-            flagInPossession.DropFromPlayer(transform.parent.GetComponent<PlayerMovement>().GetLastGroundedPosition(), gameObject);
-            flagInPossession.DropFromPlayerServer(transform.parent.GetComponent<PlayerMovement>().GetLastGroundedPosition(), gameObject);
+            Vector3 dropPosition = transform.parent.GetComponent<PlayerMovement>().GetLastGroundedPosition();
+            flagInPossession.DropFromPlayerServer(dropPosition, gameObject);
+            flagInPossession.DropFromPlayer(dropPosition, gameObject);
         }
     }
 
     public void CheckOnCaptureZone(Transform floor)
     {
-        if (flagInPossession != null)
-        {
-            if (floor.CompareTag("RedCaptureZone"))
-            {
-                Debug.Log("On Red capture zone");
-                
-                // If they have a red flag and are red team, return flag
-                if (flagInPossession.GetTeam() && teamColor)
-                {
-                    Debug.Log("Return Flag;");
-                    flagInPossession.RespawnFlagServer(gameObject);
-                    flagInPossession.RespawnFlag(gameObject);
-                }
-                // If they have a blue flag and are red team, get red point
-                else if (!flagInPossession.GetTeam() && teamColor)
-                {
-                    Debug.Log("Score red point!");
-                    CTFManager.Instance.AddPoint(true);
-                    flagInPossession.RespawnFlagServer(gameObject);
-                    flagInPossession.RespawnFlag(gameObject);
-                }
-            }
-            else if (floor.CompareTag("BlueCaptureZone"))
-            {
-                Debug.Log("On blue capture zone");
+        if (flagInPossession == null) return;
 
-                // If they have a blue flag and are blue team, return flag
-                if (!flagInPossession.GetTeam() && !teamColor)
-                {
-                    flagInPossession.RespawnFlagServer(gameObject);
-                    flagInPossession.RespawnFlag(gameObject);
-                }
-                // If they have a red flag and are blue team, get blue point
-                else if (flagInPossession.GetTeam() && teamColor)
-                {
-                    Debug.Log("Score blue point!");
-                    CTFManager.Instance.AddPoint(false);
-                    flagInPossession.RespawnFlagServer(gameObject);
-                    flagInPossession.RespawnFlag(gameObject);
-                }
-            }
+        bool flagIsRed = flagInPossession.GetTeam();
+        bool playerIsRed = teamColor;
+        bool onRedZone = floor.CompareTag("RedCaptureZone");
+        bool onBlueZone = floor.CompareTag("BlueCaptureZone");
+
+        if (onRedZone && flagIsRed && playerIsRed)
+        {
+            flagInPossession.RespawnFlagServer(gameObject);
         }
-        
+        else if (onRedZone && !flagIsRed && playerIsRed)
+        {
+            flagInPossession.ScoreFlagServer(true, gameObject);
+        }
+        else if (onBlueZone && !flagIsRed && !playerIsRed)
+        {
+            flagInPossession.RespawnFlagServer(gameObject);
+        }
+        else if (onBlueZone && flagIsRed && !playerIsRed)
+        {
+            flagInPossession.ScoreFlagServer(false, gameObject);
+        }
     }
 
     [ServerRpc(RequireOwnership = false)]
