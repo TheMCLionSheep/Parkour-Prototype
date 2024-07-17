@@ -3,11 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
+using TMPro;
 using UnityEngine;
 
 public class CTFManager : NetworkBehaviour
 {
     public static CTFManager Instance { get; private set; }
+
+    [SerializeField] TMP_Text redPointTextDisplay;
+    [SerializeField] TMP_Text bluePointTextDisplay;
 
     private readonly SyncVar<int> redPoints = new SyncVar<int>();
     private readonly SyncVar<int> bluePoints = new SyncVar<int>();
@@ -29,12 +33,12 @@ public class CTFManager : NetworkBehaviour
 
     private void OnRedPointChange(int prev, int next, bool asServer)
     {
-        Debug.Log("Red points: " + next);
+        redPointTextDisplay.text = next.ToString();
     }
 
     private void OnBluePointChange(int prev, int next, bool asServer)
     {
-        Debug.Log("Blue points: " + next);
+        bluePointTextDisplay.text = next.ToString();
     }
 
     public void SetPoints(int points, bool team)
