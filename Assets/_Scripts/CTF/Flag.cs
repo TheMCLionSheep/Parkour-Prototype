@@ -14,12 +14,15 @@ public class Flag : NetworkBehaviour
     [SerializeField] private float gravity = -25;
     [SerializeField] private float respawnHeight = 5f;
 
+    private Vector3 flagSpawn;
     private float verticalVelocity = 0f;
     CapsuleCollider capsuleCollider;
 
     void Awake()
     {
         capsuleCollider = GetComponent<CapsuleCollider>();
+
+        flagSpawn = transform.position + (Vector3.up * respawnHeight);
     }
 
     void FixedUpdate()
@@ -75,20 +78,35 @@ public class Flag : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = true)]
-    public void DropFromPlayerServer(Vector3 dropPosition, NetworkConnection conn = null)
+    public void RespawnFlagServer(GameObject player, NetworkConnection conn = null)
     {
+        DropFromPlayerObserver(flagSpawn, player);
         this.RemoveOwnership();
-        DropFromPlayerObserver(dropPosition);
     }
 
-    [ObserversRpc]
-    private void DropFromPlayerObserver(Vector3 dropPosition)
+    [ServerRpc(RequireOwnership = true)]
+    public void DropFromPlayerServer(Vector3 dropPosition, GameObject player, NetworkConnection conn = null)
     {
-        DropFromPlayer(dropPosition);
+        DropFromPlayerObserver(dropPosition, player);
+        this.RemoveOwnership();
     }
 
-    public void DropFromPlayer(Vector3 dropPosition)
+    [ObserversRpc(ExcludeOwner = true)]
+    private void DropFromPlayerObserver(Vector3 dropPosition, GameObject player)
     {
+        DropFromPlayer(dropPosition, player);
+    }
+
+    public void RespawnFlag(GameObject player)
+    {
+        DropFromPlayer(flagSpawn, player);
+    }
+
+    public void DropFromPlayer(Vector3 dropPosition, GameObject player)
+    {
+        PlayerCTFController playerTackle = player.GetComponent<PlayerCTFController>();
+        playerTackle.OwnFlag(null);
+
         transform.SetParent(null);
         transform.position = dropPosition + Vector3.up * respawnHeight;
         capsuleCollider.isTrigger = false;

@@ -57,7 +57,8 @@ public class PlayerCTFController : NetworkBehaviour
     {
         if (flagInPossession != null)
         {
-            flagInPossession.DropFromPlayerServer(transform.parent.GetComponent<PlayerMovement>().GetLastGroundedPosition());
+            flagInPossession.DropFromPlayer(transform.parent.GetComponent<PlayerMovement>().GetLastGroundedPosition(), gameObject);
+            flagInPossession.DropFromPlayerServer(transform.parent.GetComponent<PlayerMovement>().GetLastGroundedPosition(), gameObject);
         }
     }
 
@@ -72,12 +73,17 @@ public class PlayerCTFController : NetworkBehaviour
                 // If they have a red flag and are red team, return flag
                 if (flagInPossession.GetTeam() && teamColor)
                 {
-                    Debug.Log("Return flag");
+                    Debug.Log("Return Flag;");
+                    flagInPossession.RespawnFlagServer(gameObject);
+                    flagInPossession.RespawnFlag(gameObject);
                 }
                 // If they have a blue flag and are red team, get red point
                 else if (!flagInPossession.GetTeam() && teamColor)
                 {
                     Debug.Log("Score red point!");
+                    CTFManager.Instance.AddPoint(true);
+                    flagInPossession.RespawnFlagServer(gameObject);
+                    flagInPossession.RespawnFlag(gameObject);
                 }
             }
             else if (floor.CompareTag("BlueCaptureZone"))
@@ -87,12 +93,16 @@ public class PlayerCTFController : NetworkBehaviour
                 // If they have a blue flag and are blue team, return flag
                 if (!flagInPossession.GetTeam() && !teamColor)
                 {
-                    Debug.Log("Return flag");
+                    flagInPossession.RespawnFlagServer(gameObject);
+                    flagInPossession.RespawnFlag(gameObject);
                 }
                 // If they have a red flag and are blue team, get blue point
                 else if (flagInPossession.GetTeam() && teamColor)
                 {
                     Debug.Log("Score blue point!");
+                    CTFManager.Instance.AddPoint(false);
+                    flagInPossession.RespawnFlagServer(gameObject);
+                    flagInPossession.RespawnFlag(gameObject);
                 }
             }
         }
