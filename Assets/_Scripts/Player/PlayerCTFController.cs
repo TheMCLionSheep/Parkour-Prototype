@@ -1,23 +1,37 @@
 using FishNet.Connection;
 using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class PlayerCTFController : NetworkBehaviour
 {
-    private bool teamColor;
-
     [SerializeField] private GameObject flagHolder;
     [SerializeField] private float tackleForce = 5f;
 
+    private readonly SyncVar<bool> teamColor = new SyncVar<bool>(new SyncTypeSettings(WritePermission.ClientUnsynchronized, ReadPermission.ExcludeOwner));
     private Flag flagInPossession;
+    private Transform spawnPoint;
     PlayerMovement playerMovement;
 
     public void Start()
     {
         playerMovement = transform.parent.gameObject.GetComponent<PlayerMovement>();
-        teamColor = true;
+        UpdateSpawn();
     }
 
+    private void Update()
+    {
+        if (!base.IsOwner) return;
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            Debug.Log("Current team: " + teamColor.Value + ", " + gameObject.GetInstanceID());
+            ChangeTeamsServer(!teamColor.Value);
+            ChangeTeam();
+        }
+    }
     public void CollideWithObject(Collider other, Vector3 collisionForce)
     {
         if (!base.IsOwner) return;
@@ -37,6 +51,32 @@ public class PlayerCTFController : NetworkBehaviour
             other.gameObject.GetComponent<PlayerCTFController>().TacklePlayerServer(newCollision);
             other.transform.parent.GetComponent<PlayerMovement>().EnableRagdoll(newCollision);
         }
+    }
+
+    public void UpdateSpawn()
+    {
+        spawnPoint = teamColor.Value ? GameObject.FindWithTag("RedSpawn").transform : GameObject.FindWithTag("BlueSpawn").transform;
+    }
+
+    public void RespawnPlayer()
+    {
+        Debug.Log("Respawn");
+        transform.parent.position = spawnPoint.position;
+    }
+
+    [ServerRpc(RunLocally = true)]
+    public void ChangeTeamsServer(bool newTeam)
+    {
+        teamColor.Value = newTeam;
+        Debug.Log("Change to: " + teamColor.Value + ", " + gameObject.GetInstanceID());
+    }
+
+    public void ChangeTeam()
+    {
+        Debug.Log("Team: " + teamColor.Value + ", " + gameObject.GetInstanceID());
+        UpdateSpawn();
+        DropPlayerFlag();
+        RespawnPlayer();
     }
 
     public GameObject GetFlagHolder()
@@ -64,9 +104,11 @@ public class PlayerCTFController : NetworkBehaviour
         if (flagInPossession == null) return;
 
         bool flagIsRed = flagInPossession.GetTeam();
-        bool playerIsRed = teamColor;
+        bool playerIsRed = teamColor.Value;
         bool onRedZone = floor.CompareTag("RedCaptureZone");
         bool onBlueZone = floor.CompareTag("BlueCaptureZone");
+
+        Debug.Log("On capture: " + playerIsRed);
 
         if (onRedZone && flagIsRed && playerIsRed)
         {

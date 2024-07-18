@@ -206,7 +206,6 @@ GameObject:
   - component: {fileID: 7948087436743643495}
   - component: {fileID: 6715681884679647864}
   - component: {fileID: 8575913883866858776}
-  - component: {fileID: 5213618534295737635}
   - component: {fileID: -1423161960777810329}
   m_Layer: 0
   m_Name: PlayerPrefab
@@ -516,18 +515,6 @@ MonoBehaviour:
   playerBody: {fileID: 1931805718371335628}
   playerArms: {fileID: 5755959926885366471}
   playerBodyMesh: {fileID: 4915097077852040977}
---- !u!114 &5213618534295737635
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 442205924411176452}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6be36e59eed2904c82a86c48ed666c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!82 &-1423161960777810329
 AudioSource:
   m_ObjectHideFlags: 0
@@ -7169,6 +7156,7 @@ MonoBehaviour:
   _networkObjectCache: {fileID: 7948087436743643495}
   flagHolder: {fileID: 2583190013794437564}
   tackleForce: 2
+  switchTeamBtn: {fileID: 0}
 --- !u!114 &4163459029115496227
 MonoBehaviour:
   m_ObjectHideFlags: 0

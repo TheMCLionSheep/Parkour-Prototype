@@ -119,8 +119,7 @@ public class PlayerMovement : NetworkBehaviour
     private PlayerCTFController playerCTFController;
     private RagdollController ragdollController;
     private PlayerAnimator playerAnimator;
-    private PlayerSpawn playerSpawn;
-
+    
     // Start is called before the first frame update
     void Awake()
     {
@@ -130,7 +129,6 @@ public class PlayerMovement : NetworkBehaviour
         playerCTFController = playerBody.GetComponent<PlayerCTFController>();
         ragdollController = playerBody.GetComponent<RagdollController>();
         playerAnimator = GetComponent<PlayerAnimator>();
-        playerSpawn = GetComponent<PlayerSpawn>();
 
         lookAction = playerInput.actions.FindAction("Look");
         moveAction = playerInput.actions.FindAction("Move");
@@ -384,7 +382,7 @@ public class PlayerMovement : NetworkBehaviour
             verticalVelocity = 0;
             landingVelocity = 0;
             playerCTFController.DropPlayerFlag();
-            playerSpawn.RespawnPlayer();
+            playerCTFController.RespawnPlayer();
         }
     }
 
