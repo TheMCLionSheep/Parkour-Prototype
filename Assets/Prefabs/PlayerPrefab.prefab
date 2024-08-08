@@ -7146,7 +7146,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8565149118489908221}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 53d33764ef0cb42478c4609f944cca6e, type: 3}
   m_Name: 
@@ -7156,7 +7156,6 @@ MonoBehaviour:
   _networkObjectCache: {fileID: 7948087436743643495}
   flagHolder: {fileID: 2583190013794437564}
   tackleForce: 2
-  switchTeamBtn: {fileID: 0}
 --- !u!114 &4163459029115496227
 MonoBehaviour:
   m_ObjectHideFlags: 0

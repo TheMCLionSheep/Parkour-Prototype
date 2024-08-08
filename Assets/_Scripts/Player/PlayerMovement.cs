@@ -126,9 +126,14 @@ public class PlayerMovement : NetworkBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         playerInput = GetComponent<PlayerInput>();
         capsuleCollider = playerBody.GetComponent<CapsuleCollider>();
-        playerCTFController = playerBody.GetComponent<PlayerCTFController>();
         ragdollController = playerBody.GetComponent<RagdollController>();
         playerAnimator = GetComponent<PlayerAnimator>();
+
+        if (TryGetComponent(out PlayerCTFController ctfController))
+        {
+            playerCTFController = ctfController;
+            Debug.Log("CTF player");
+        }
 
         lookAction = playerInput.actions.FindAction("Look");
         moveAction = playerInput.actions.FindAction("Move");
@@ -381,8 +386,11 @@ public class PlayerMovement : NetworkBehaviour
         {
             verticalVelocity = 0;
             landingVelocity = 0;
-            playerCTFController.DropPlayerFlag();
-            playerCTFController.RespawnPlayer();
+            if (playerCTFController != null)
+            {
+                playerCTFController.DropPlayerFlag();
+                playerCTFController.RespawnPlayer();
+            }
         }
     }
 
@@ -555,7 +563,10 @@ public class PlayerMovement : NetworkBehaviour
                 break;
             }
 
-            playerCTFController.CollideWithObject(hit.collider, movement / Time.deltaTime);
+            if (playerCTFController != null)
+            {
+                playerCTFController.CollideWithObject(hit.collider, movement / Time.deltaTime);
+            }
 
             // If we are overlapping with something, just exit.
             if (hit.distance == 0)
@@ -615,7 +626,7 @@ public class PlayerMovement : NetworkBehaviour
         bool onGround = CastSelf(transform.position, transform.rotation, Vector3.down, groundDist, out groundHit);
         float angle = Vector3.Angle(groundHit.normal, Vector3.up);
 
-        if (onGround)
+        if (onGround && playerCTFController != null)
         {
             playerCTFController.CheckOnCaptureZone(groundHit.transform);
         }

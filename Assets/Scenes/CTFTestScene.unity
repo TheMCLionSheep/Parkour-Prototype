@@ -3882,9 +3882,13 @@ PrefabInstance:
       propertyPath: m_Name
       value: Red Totem
       objectReference: {fileID: 0}
+    - target: {fileID: 3252936122973513363, guid: cc5ddc6915375db43bb27ef92f34da31, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3383213398455890992, guid: cc5ddc6915375db43bb27ef92f34da31, type: 3}
       propertyPath: <SceneId>k__BackingField
-      value: 3019889223
+      value: 3145710463
       objectReference: {fileID: 0}
     - target: {fileID: 5619663725599135208, guid: cc5ddc6915375db43bb27ef92f34da31, type: 3}
       propertyPath: m_LocalPosition.y
@@ -9366,7 +9370,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1381227907492093125, guid: bd5e4355c07d34440ac8e397dc873e0f, type: 3}
       propertyPath: <SceneId>k__BackingField
-      value: 4051671759
+      value: 3120561775
       objectReference: {fileID: 0}
     - target: {fileID: 2839776610437078407, guid: bd5e4355c07d34440ac8e397dc873e0f, type: 3}
       propertyPath: m_LocalPosition.x
@@ -9411,6 +9415,10 @@ PrefabInstance:
     - target: {fileID: 8008123356030140105, guid: bd5e4355c07d34440ac8e397dc873e0f, type: 3}
       propertyPath: m_Name
       value: Blue Totem Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 8008123356030140105, guid: bd5e4355c07d34440ac8e397dc873e0f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -14086,6 +14094,11 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!4 &1244861191 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7314535656502195503, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
+  m_PrefabInstance: {fileID: 8053652190212612101}
+  m_PrefabAsset: {fileID: 0}
 --- !u!43 &1273145813
 Mesh:
   m_ObjectHideFlags: 0
@@ -16289,7 +16302,7 @@ MonoBehaviour:
   _ipv6BindAddress: 
   _port: 7770
   _maximumClients: 4095
-  _clientAddress: 10.244.166.235
+  _clientAddress: localhost
 --- !u!43 &1546620875
 Mesh:
   m_ObjectHideFlags: 0
@@ -18839,7 +18852,7 @@ MonoBehaviour:
   _teleportThreshold: 1
   <PrefabId>k__BackingField: 0
   <SpawnableCollectionId>k__BackingField: 0
-  <SceneId>k__BackingField: 2986335815
+  <SceneId>k__BackingField: 2977824503
   <AssetPathHash>k__BackingField: 0
 --- !u!114 &1635701064
 MonoBehaviour:
@@ -18858,6 +18871,10 @@ MonoBehaviour:
   _networkObjectCache: {fileID: 1635701063}
   redPointTextDisplay: {fileID: 1589513089}
   bluePointTextDisplay: {fileID: 2094114868}
+  redFlagPrefab: {fileID: 3252936122973513363, guid: cc5ddc6915375db43bb27ef92f34da31, type: 3}
+  blueFlagPrefab: {fileID: 8008123356030140105, guid: bd5e4355c07d34440ac8e397dc873e0f, type: 3}
+  redFlagSpawn: {fileID: 1244861191}
+  blueFlagSpawn: {fileID: 1957971748}
 --- !u!43 &1637578025
 Mesh:
   m_ObjectHideFlags: 0
@@ -24621,6 +24638,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1292405922}
+    - target: {fileID: 7314535656502195503, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 7397323055479401249, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -24905,6 +24926,14 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 94303277}
+    - target: {fileID: 9023596493317842240, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
+      propertyPath: m_Name
+      value: BlueFlag Spawn
+      objectReference: {fileID: 0}
+    - target: {fileID: 9023596493317842240, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
     - target: {fileID: 9137363314508888660, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -24922,6 +24951,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
+--- !u!4 &1957971748 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7314535656502195503, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
+  m_PrefabInstance: {fileID: 1957971747}
+  m_PrefabAsset: {fileID: 0}
 --- !u!43 &1993786162
 Mesh:
   m_ObjectHideFlags: 0
@@ -26728,7 +26762,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3758189540570035795, guid: 2576e3a1117c90849b91fa630c9d2b87, type: 3}
       propertyPath: <SceneId>k__BackingField
-      value: 4085234295
+      value: 4286561271
       objectReference: {fileID: 0}
     - target: {fileID: 5395422128226526436, guid: 2576e3a1117c90849b91fa630c9d2b87, type: 3}
       propertyPath: m_LocalPosition.x
@@ -26772,7 +26806,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7948087436743643495, guid: 2576e3a1117c90849b91fa630c9d2b87, type: 3}
       propertyPath: <SceneId>k__BackingField
-      value: 3086850791
+      value: 4286552935
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -27574,15 +27608,15 @@ PrefabInstance:
       objectReference: {fileID: 1451279514}
     - target: {fileID: 6314202714316382596, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_SelectedEdges.Array.size
-      value: 4
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6314202714316382596, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_SelectedFaces.Array.size
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6314202714316382596, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_SelectedVertices.Array.size
-      value: 4
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6467337181759328503, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_Mesh
@@ -27622,15 +27656,15 @@ PrefabInstance:
       objectReference: {fileID: 987069036}
     - target: {fileID: 6786247577783798688, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_SelectedEdges.Array.size
-      value: 4
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6786247577783798688, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_SelectedFaces.Array.size
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6786247577783798688, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_SelectedVertices.Array.size
-      value: 4
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6800773583760596189, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_Mesh
@@ -27694,15 +27728,15 @@ PrefabInstance:
       objectReference: {fileID: 1493665660}
     - target: {fileID: 7548404672180047178, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_SelectedEdges.Array.size
-      value: 4
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7548404672180047178, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_SelectedFaces.Array.size
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7548404672180047178, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_SelectedVertices.Array.size
-      value: 4
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7555503139862507478, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_Mesh
@@ -27892,6 +27926,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1151248211}
+    - target: {fileID: 9023596493317842240, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
     - target: {fileID: 9137363314508888660, guid: c80d9fcef01a55140bd763686a99b58d, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -27966,6 +28004,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6870408865943917037, guid: dab2f906e5717104093b2155763533a5, type: 3}
+      propertyPath: _playerPrefab
+      value: 
+      objectReference: {fileID: 2154287635875461935, guid: cf658fad306cc454ab6f741638c6dda3, type: 3}
     - target: {fileID: 6870408865943917037, guid: dab2f906e5717104093b2155763533a5, type: 3}
       propertyPath: Spawns.Array.size
       value: 2
