@@ -81,7 +81,8 @@ public class PlayerMovement : NetworkBehaviour
     private float diveAngle = 0f;
 
     private float timeSinceJump = Mathf.Infinity;
-    private float timeSinceDive = Mathf.Infinity;
+    private float timeSinceEnterDive = Mathf.Infinity;
+    private float timeSinceExitDive = Mathf.Infinity;
     private float timeSinceJumpPressed = Mathf.Infinity;
     private float timeSinceDivePressed = Mathf.Infinity;
     private float timeSinceCrouchPressed = Mathf.Infinity;
@@ -119,7 +120,7 @@ public class PlayerMovement : NetworkBehaviour
     private PlayerCTFController playerCTFController;
     private RagdollController ragdollController;
     private PlayerAnimator playerAnimator;
-    
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -129,10 +130,9 @@ public class PlayerMovement : NetworkBehaviour
         ragdollController = playerBody.GetComponent<RagdollController>();
         playerAnimator = GetComponent<PlayerAnimator>();
 
-        if (TryGetComponent(out PlayerCTFController ctfController))
+        if (playerBody.TryGetComponent(out PlayerCTFController ctfController))
         {
             playerCTFController = ctfController;
-            Debug.Log("CTF player");
         }
 
         lookAction = playerInput.actions.FindAction("Look");
@@ -173,7 +173,6 @@ public class PlayerMovement : NetworkBehaviour
     {
         jumpAction.performed += JumpPressed;
         diveAction.performed += DivePressed;
-        diveAction.canceled += DiveCancelled;
         crouchAction.performed += CrouchPressed;
         crouchAction.canceled += CrouchCancelled;
     }
@@ -181,7 +180,6 @@ public class PlayerMovement : NetworkBehaviour
     private void OnDisable() {
         jumpAction.performed -= JumpPressed;
         diveAction.performed -= DivePressed;
-        diveAction.canceled -= DiveCancelled;
         crouchAction.performed -= CrouchPressed;
         crouchAction.canceled -= CrouchCancelled;
     }
@@ -200,12 +198,6 @@ public class PlayerMovement : NetworkBehaviour
         {
             timeSinceDivePressed = 0f;
         }
-        pressingDive = true;
-    }
-
-    private void DiveCancelled(InputAction.CallbackContext context)
-    {
-        pressingDive = false;
     }
 
     private void CrouchPressed(InputAction.CallbackContext context)
@@ -315,6 +307,7 @@ public class PlayerMovement : NetworkBehaviour
 
         if (timeInSlide >= ragdollDelay && !sliding) // Move into sliding if you are diving and hit the ground
         {
+            Debug.Log("Sliding!");
             sliding = true;
             slideVelocity = horizontalRunVelocity + diveVelocity;
 
@@ -431,20 +424,21 @@ public class PlayerMovement : NetworkBehaviour
                 timeSinceOnGround = 0;
                 timeSinceJumpPressed = Mathf.Infinity;
             }
-            else if (attemptingJump && diving && timeSinceDive <= chainActionBuffer && timeSinceOnGround <= chainActionBuffer + coyoteTime)
+            else if (attemptingJump && diving && timeSinceEnterDive <= chainActionBuffer && timeSinceOnGround <= chainActionBuffer + coyoteTime)
             {
                 // If you pressed the jump button and you just dived from ground, apply jump force
-                verticalVelocity += jumpDivePower.y - divePower.y;
+                verticalVelocity += jumpPower;
                 timeSinceJump = 0;
                 timeSinceJumpPressed = Mathf.Infinity;
             }
-            else if (attemptingJump && diving && timeSinceDive > chainActionBuffer && timeSinceDiveReady <= coyoteTime && !sliding)
+            else if (attemptingJump && diving && timeSinceEnterDive > chainActionBuffer && timeSinceDiveReady <= coyoteTime && !sliding)
             {
-                // If you pressed the jump button while diving, and there's an obstacle, apply diving jump force
-                verticalVelocity += divingJumpPower.y;
-                diveVelocity += diveDirection * divingJumpPower.x;
+                // Alternative controls: If you pressed the jump button while diving, and there's an obstacle, leave dive
+                verticalVelocity += divePower.y;
                 timeSinceJump = 0;
                 timeSinceJumpPressed = Mathf.Infinity;
+                timeSinceExitDive = 0;
+                diving = false;
                 playerAnimator.AnimateJumpInDive();
             }
 
@@ -453,24 +447,43 @@ public class PlayerMovement : NetworkBehaviour
             if (attemptingDive && !diving && timeSinceJump > chainActionBuffer && timeSinceOnGround <= coyoteTime)
             {
                 // If you are trying to dive and you on the ground, apply dive force.
-                verticalVelocity += divePower.y;
+                // verticalVelocity += divePower.y;
                 diveVelocity += diveDirection * divePower.x;
-                timeSinceDive = 0;
+                timeSinceEnterDive = 0;
                 timeSinceOnGround = 0;
                 timeSinceDivePressed = Mathf.Infinity;
+                diving = true;
             }
             else if (attemptingDive && !diving && timeSinceJump <= chainActionBuffer && timeSinceOnGround <= chainActionBuffer + coyoteTime)
             {
                 // If you pressed dive and you just jumped off the ground, apply dive force.
-                verticalVelocity += jumpDivePower.y - jumpPower;
+                //verticalVelocity += jumpDivePower.y - jumpPower; // TODO fix this!!
                 diveVelocity += diveDirection * divePower.x;
-                timeSinceDive = 0;
+                timeSinceEnterDive = 0;
                 timeSinceDivePressed = Mathf.Infinity;
+                diving = true;
+            }
+            else if (attemptingDive && diving && timeSinceEnterDive > chainActionBuffer && timeSinceDiveReady <= coyoteTime && !sliding)
+            {
+                // Alternative control: If you pressed the dive button while diving, and there's an obstacle, add dive momentum forward
+                verticalVelocity += divingJumpPower.y;
+                diveVelocity += diveDirection * divingJumpPower.x;
+                timeSinceEnterDive = 0;
+                timeSinceDivePressed = Mathf.Infinity;
+                playerAnimator.AnimateJumpInDive();
+            }
+            else if (attemptingDive && timeSinceExitDive <= chainActionBuffer && timeSinceEnterDive > chainActionBuffer && timeSinceDiveReady <= coyoteTime && !sliding)
+            {
+                // Alternative control: If you pressed the dive button while diving, and there's an obstacle, add dive momentum forward
+                verticalVelocity += divingJumpPower.y;
+                diveVelocity += diveDirection * divingJumpPower.x;
+                timeSinceDivePressed = Mathf.Infinity;
+                playerAnimator.AnimateJumpInDive();
             }
 
             // If you crouch and dive at the same time on the ground, you will slide
             bool attemptingSlide = timeSinceCrouchPressed <= jumpBufferTime;
-            if (attemptingSlide && diving && timeSinceDive <= chainActionBuffer && timeSinceOnGround <= chainActionBuffer + coyoteTime)
+            if (attemptingSlide && diving && timeSinceEnterDive <= chainActionBuffer && timeSinceOnGround <= chainActionBuffer + coyoteTime)
             {
                 verticalVelocity = -divePower.y;
                 diveVelocity += diveDirection * slidingPower.x;
@@ -478,13 +491,13 @@ public class PlayerMovement : NetworkBehaviour
                 slideVelocity = horizontalRunVelocity + diveVelocity;
                 sliding = true;
             }
-            if (!pressingDive && sliding)
+            if (sliding && attemptingJump)
             {
                 sliding = false;
+                diving = false;
                 timeInSlide = 0f;
             }
 
-            diving = pressingDive;
             crouching = pressingCrouch;
         } else {
             // If in ragdoll, and hit jump, leave the ragdoll
@@ -535,7 +548,8 @@ public class PlayerMovement : NetworkBehaviour
 
         // Add time to each time reference variable
         timeSinceJump += Time.deltaTime;
-        timeSinceDive += Time.deltaTime;
+        timeSinceEnterDive += Time.deltaTime;
+        timeSinceExitDive += Time.deltaTime;
         timeSinceJumpPressed += Time.deltaTime;
         timeSinceDivePressed += Time.deltaTime;
     }
@@ -571,7 +585,6 @@ public class PlayerMovement : NetworkBehaviour
             // If we are overlapping with something, just exit.
             if (hit.distance == 0)
             {
-                Debug.Log("Inside");
                 break;
             }
 
