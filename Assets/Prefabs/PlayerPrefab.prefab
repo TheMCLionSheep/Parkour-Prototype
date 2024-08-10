@@ -349,9 +349,7 @@ MonoBehaviour:
   maxWalkingAngle: 45
   anglePower: 0.25
   jumpPower: 7
-  divePower: {x: 0, y: 0}
-  jumpDivePower: {x: 0, y: 5}
-  divingJumpPower: {x: 4, y: 8}
+  divingJumpPower: {x: 4, y: 5.5}
   slidingPower: {x: 2, y: 0}
   chainActionBuffer: 0.05
   coyoteTime: 0.1
@@ -379,7 +377,6 @@ MonoBehaviour:
   maxImpactVelocity: 20
   impactRecovery: 150
   impactToHeight: 0.7
-  voidLevel: 5
   playerCamera: {fileID: 1125577090835398522}
   playerBody: {fileID: 488549757660853215}
   playerModel: {fileID: 7189300031429758400}
@@ -7156,6 +7153,7 @@ MonoBehaviour:
   _networkObjectCache: {fileID: 7948087436743643495}
   flagHolder: {fileID: 2583190013794437564}
   tackleForce: 2
+  voidLevel: 0
 --- !u!114 &4163459029115496227
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -28,10 +28,8 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private float anglePower = 0.5f;
 
     [SerializeField] private float jumpPower = 7f;
-    [SerializeField] private Vector2 divePower = new Vector2(5, 5);
-    [SerializeField] private Vector2 jumpDivePower = new Vector2(5, 7);
-    [SerializeField] private Vector2 divingJumpPower = new Vector2(5, 7);
-    [SerializeField] private Vector2 slidingPower = new Vector2(5, 0);
+    [SerializeField] private Vector2 divingJumpPower = new Vector2(4, 5.5f);
+    [SerializeField] private Vector2 slidingPower = new Vector2(2, 0);
 
     [SerializeField] private float chainActionBuffer = 0.05f;
     [SerializeField] private float coyoteTime = 0.05f;
@@ -65,8 +63,6 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private float maxImpactVelocity = 10;
     [SerializeField] private float impactRecovery = 1;
     [SerializeField] private float impactToHeight = 1;
-
-    [SerializeField] private float voidLevel;
 
     [SerializeField] private Transform playerCamera;
     [SerializeField] private Transform playerBody;
@@ -358,33 +354,37 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
 
-        if (sliding)
-        {
-            // Apply a constant stopping velocity to the player's slide movement to slow the player down.
-            slideVelocity = CalculateDrag(slideVelocity,slideDrag);
+        // if (sliding)
+        // {
+        //     // Apply a constant stopping velocity to the player's slide movement to slow the player down.
+        //     slideVelocity = CalculateDrag(slideVelocity,slideDrag);
 
-            movement = new Vector3(slideVelocity.x, 0f, slideVelocity.y);
+        //     movement = new Vector3(slideVelocity.x, 0f, slideVelocity.y);
 
-            landingVelocity = 0;
-        }
-        else
-        {
-            // The resultant movement is a combination of the run movement (controlled by keys), and diving velocity.
-            movement = new Vector3(horizontalRunVelocity.x + diveVelocity.x, 0f, horizontalRunVelocity.y + diveVelocity.y);   
-        }
+        //     landingVelocity = 0;
+        // }
+        // else
+        // {
+        //     // The resultant movement is a combination of the run movement (controlled by keys), and diving velocity.
+        //     movement = new Vector3(horizontalRunVelocity.x + diveVelocity.x, 0f, horizontalRunVelocity.y + diveVelocity.y);   
+        // }
+        movement = new Vector3(horizontalRunVelocity.x, verticalVelocity, horizontalRunVelocity.y) * Time.deltaTime;
 
-        transform.position = MovePlayer((movement + (verticalVelocity * Vector3.up)) * Time.deltaTime);
+        Vector3 newPosition = MovePlayer(ref movement);
 
-        if (transform.position.y <= voidLevel)
-        {
-            verticalVelocity = 0;
-            landingVelocity = 0;
-            if (playerCTFController != null)
-            {
-                playerCTFController.DropPlayerFlag();
-                playerCTFController.RespawnPlayer();
-            }
-        }
+        Debug.Log(movement / Time.deltaTime);
+
+        horizontalRunVelocity.x = movement.x / Time.deltaTime;
+        //verticalVelocity = movement.y / Time.deltaTime;
+        horizontalRunVelocity.y = movement.z / Time.deltaTime;
+
+        // Calculate the true movement vector (based on collisions), and modify the movement accordingly
+        // Vector3 changeInMovement = (newPosition - transform.position) / Time.deltaTime;
+        // verticalVelocity = changeInMovement.y;
+        // horizontalRunVelocity = new Vector2(changeInMovement.x, changeInMovement.z);
+
+        // Change the player's position
+        transform.position = newPosition;
     }
 
     private void HandleActions(Vector2 diveDirection)
@@ -419,7 +419,7 @@ public class PlayerMovement : NetworkBehaviour
             if (attemptingJump && !diving && timeSinceOnGround <= coyoteTime)
             {
                 // If you are trying to jump and you are on the ground, apply jump force.
-                verticalVelocity += jumpPower;
+                verticalVelocity = jumpPower;
                 timeSinceJump = 0;
                 timeSinceOnGround = 0;
                 timeSinceJumpPressed = Mathf.Infinity;
@@ -427,14 +427,13 @@ public class PlayerMovement : NetworkBehaviour
             else if (attemptingJump && diving && timeSinceEnterDive <= chainActionBuffer && timeSinceOnGround <= chainActionBuffer + coyoteTime)
             {
                 // If you pressed the jump button and you just dived from ground, apply jump force
-                verticalVelocity += jumpPower;
+                verticalVelocity = jumpPower;
                 timeSinceJump = 0;
                 timeSinceJumpPressed = Mathf.Infinity;
             }
             else if (attemptingJump && diving && timeSinceEnterDive > chainActionBuffer && timeSinceDiveReady <= coyoteTime && !sliding)
             {
-                // Alternative controls: If you pressed the jump button while diving, and there's an obstacle, leave dive
-                verticalVelocity += divePower.y;
+                // If you pressed the jump button while diving, and there's an obstacle, leave dive
                 timeSinceJump = 0;
                 timeSinceJumpPressed = Mathf.Infinity;
                 timeSinceExitDive = 0;
@@ -448,7 +447,7 @@ public class PlayerMovement : NetworkBehaviour
             {
                 // If you are trying to dive and you on the ground, apply dive force.
                 // verticalVelocity += divePower.y;
-                diveVelocity += diveDirection * divePower.x;
+                //diveVelocity += diveDirection * divePower.x;
                 timeSinceEnterDive = 0;
                 timeSinceOnGround = 0;
                 timeSinceDivePressed = Mathf.Infinity;
@@ -457,24 +456,24 @@ public class PlayerMovement : NetworkBehaviour
             else if (attemptingDive && !diving && timeSinceJump <= chainActionBuffer && timeSinceOnGround <= chainActionBuffer + coyoteTime)
             {
                 // If you pressed dive and you just jumped off the ground, apply dive force.
-                //verticalVelocity += jumpDivePower.y - jumpPower; // TODO fix this!!
-                diveVelocity += diveDirection * divePower.x;
+                //verticalVelocity += jumpDivePower.y - jumpPower;
+                //diveVelocity += diveDirection * divePower.x;
                 timeSinceEnterDive = 0;
                 timeSinceDivePressed = Mathf.Infinity;
                 diving = true;
             }
             else if (attemptingDive && diving && timeSinceEnterDive > chainActionBuffer && timeSinceDiveReady <= coyoteTime && !sliding)
             {
-                // Alternative control: If you pressed the dive button while diving, and there's an obstacle, add dive momentum forward
+                // If you pressed the dive button while diving, and there's an obstacle, add dive momentum forward
                 verticalVelocity += divingJumpPower.y;
                 diveVelocity += diveDirection * divingJumpPower.x;
                 timeSinceEnterDive = 0;
                 timeSinceDivePressed = Mathf.Infinity;
                 playerAnimator.AnimateJumpInDive();
             }
-            else if (attemptingDive && timeSinceExitDive <= chainActionBuffer && timeSinceEnterDive > chainActionBuffer && timeSinceDiveReady <= coyoteTime && !sliding)
+            else if (attemptingDive && timeSinceExitDive <= chainActionBuffer && timeSinceEnterDive > chainActionBuffer && timeSinceDiveReady <= coyoteTime + chainActionBuffer && !sliding)
             {
-                // Alternative control: If you pressed the dive button while diving, and there's an obstacle, add dive momentum forward
+                // If you pressed the dive button right after jumping from dive, and there's an obstacle, add dive momentum forward
                 verticalVelocity += divingJumpPower.y;
                 diveVelocity += diveDirection * divingJumpPower.x;
                 timeSinceDivePressed = Mathf.Infinity;
@@ -485,7 +484,6 @@ public class PlayerMovement : NetworkBehaviour
             bool attemptingSlide = timeSinceCrouchPressed <= jumpBufferTime;
             if (attemptingSlide && diving && timeSinceEnterDive <= chainActionBuffer && timeSinceOnGround <= chainActionBuffer + coyoteTime)
             {
-                verticalVelocity = -divePower.y;
                 diveVelocity += diveDirection * slidingPower.x;
                 timeSinceCrouchPressed = Mathf.Infinity;
                 slideVelocity = horizontalRunVelocity + diveVelocity;
@@ -515,14 +513,6 @@ public class PlayerMovement : NetworkBehaviour
         {
             capsuleCollider.height = tuckedHeight;
             capsuleCollider.center = new Vector3(0f, anchorOffset + (fullHeight + fullHeight - tuckedHeight) / 2, 0f);
-        }
-        else
-        {
-            // // How much the capsule will get taller this frame
-            // float heightChange = Mathf.Min(standupSpeed * Time.deltaTime, fullHeight - capsuleCollider.height);
-
-            // // Check if we will hit the ground with this height change
-            // ManageHeight(heightChange);
         }
         
         // If you are diving, rotate into diving position, else, move back upright.
@@ -554,7 +544,7 @@ public class PlayerMovement : NetworkBehaviour
         timeSinceDivePressed += Time.deltaTime;
     }
 
-    public Vector3 MovePlayer(Vector3 movement)
+    public Vector3 MovePlayer(ref Vector3 movement)
     {
         Vector3 position = transform.position;
         Quaternion rotation = transform.rotation;
@@ -585,6 +575,7 @@ public class PlayerMovement : NetworkBehaviour
             // If we are overlapping with something, just exit.
             if (hit.distance == 0)
             {
+                Debug.LogWarning("Inside something! TODO: Handle this");
                 break;
             }
 
@@ -610,10 +601,12 @@ public class PlayerMovement : NetworkBehaviour
 
             // Reduce the remaining movement by the remaining movement that ocurred
             remaining *= Mathf.Pow(1 - normalizedAngle, anglePower) * 0.9f + 0.1f;
+            movement *= Mathf.Pow(1 - normalizedAngle, anglePower) * 0.9f + 0.1f;
 
             // Rotate the remaining movement to be projected along the plane 
             // of the surface hit (emulate pushing against the object)
             Vector3 projected = Vector3.ProjectOnPlane(remaining, planeNormal).normalized * remaining.magnitude;
+            movement = Vector3.ProjectOnPlane(movement, planeNormal).normalized * movement.magnitude;
 
             // If projected remaining movement is less than original remaining movement (so if the projection broke
             // due to float operations), then change this to just project along the vertical.
@@ -749,6 +742,13 @@ public class PlayerMovement : NetworkBehaviour
 
         capsuleCollider.height += heightChange;
         capsuleCollider.center = new Vector3(0f, anchorOffset + (fullHeight + fullHeight - capsuleCollider.height) / 2, 0f);
+    }
+
+    public void ResetPlayer()
+    {
+        verticalVelocity = 0;
+        landingVelocity = 0;
+        diving = false;
     }
 
     public bool CanTackle()

@@ -10,6 +10,8 @@ public class PlayerCTFController : NetworkBehaviour
     [SerializeField] private GameObject flagHolder;
     [SerializeField] private float tackleForce = 5f;
 
+    [SerializeField] private float voidLevel;
+
     private readonly SyncVar<bool> teamColor = new SyncVar<bool>(new SyncTypeSettings(WritePermission.ClientUnsynchronized, ReadPermission.ExcludeOwner));
     private Flag flagInPossession;
     private Transform spawnPoint;
@@ -30,6 +32,13 @@ public class PlayerCTFController : NetworkBehaviour
             Debug.Log("Current team: " + teamColor.Value + ", " + gameObject.GetInstanceID());
             ChangeTeamsServer(!teamColor.Value);
             ChangeTeam();
+        }
+
+        // If the player is below void level, respawn player
+        if (transform.position.y <= voidLevel)
+        {            
+            DropPlayerFlag();
+            RespawnPlayer();
         }
     }
     public void CollideWithObject(Collider other, Vector3 collisionForce)
@@ -61,6 +70,7 @@ public class PlayerCTFController : NetworkBehaviour
     public void RespawnPlayer()
     {
         Debug.Log("Respawn");
+        playerMovement.ResetPlayer();
         transform.parent.position = spawnPoint.position;
     }
 
