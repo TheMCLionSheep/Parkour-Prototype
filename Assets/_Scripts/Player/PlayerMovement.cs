@@ -166,7 +166,9 @@ public class PlayerMovement : NetworkBehaviour
     public void EnableCamera()
     {
         isControllingPlayer = true;
-        playerCamera.gameObject.SetActive(true);
+        playerCamera.gameObject.SetActive(false);
+        //
+        playerRagdollCamera.SetActive(true);
     }
 
     private void OnEnable()
@@ -338,6 +340,7 @@ public class PlayerMovement : NetworkBehaviour
         // If pressing in a direction, speed up in that direction
         if (moveDirection.magnitude > 0f && !ragdoll)
         {
+            playerAnimator.AnimateRun(true);
             horizontalRunVelocity += normalizedMoveDirection * runAcceleration * Time.deltaTime;
             if (!crouching && horizontalRunVelocity.magnitude > maxSpeed)
             {
@@ -349,6 +352,11 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
         Vector3 movement;
+
+        if (moveDirection.magnitude == 0)
+        {
+            playerAnimator.AnimateRun(false);
+        }
 
         // Slow the dive velocity down if not pressing in the direction of the dive velocity
         if (diveVelocity.magnitude > 0f)
@@ -426,6 +434,7 @@ public class PlayerMovement : NetworkBehaviour
             if (attemptingJump && !diving && timeSinceOnGround <= coyoteTime)
             {
                 // If you are trying to jump and you are on the ground, apply jump force.
+                playerAnimator.Jump();
                 verticalVelocity += jumpPower;
                 timeSinceJump = 0;
                 timeSinceOnGround = 0;
@@ -434,6 +443,7 @@ public class PlayerMovement : NetworkBehaviour
             else if (attemptingJump && diving && timeSinceDive <= chainActionBuffer && timeSinceOnGround <= chainActionBuffer + coyoteTime)
             {
                 // If you pressed the jump button and you just dived from ground, apply jump force
+                playerAnimator.Jump();
                 verticalVelocity += jumpDivePower.y - divePower.y;
                 timeSinceJump = 0;
                 timeSinceJumpPressed = Mathf.Infinity;
@@ -446,6 +456,7 @@ public class PlayerMovement : NetworkBehaviour
                 timeSinceJump = 0;
                 timeSinceJumpPressed = Mathf.Infinity;
                 playerAnimator.AnimateJumpInDive();
+                playerAnimator.AnimateDive(false);
             }
 
             bool attemptingDive = timeSinceDivePressed <= jumpBufferTime;
@@ -453,6 +464,7 @@ public class PlayerMovement : NetworkBehaviour
             if (attemptingDive && !diving && timeSinceJump > chainActionBuffer && timeSinceOnGround <= coyoteTime)
             {
                 // If you are trying to dive and you on the ground, apply dive force.
+                playerAnimator.AnimateDive(true);
                 verticalVelocity += divePower.y;
                 diveVelocity += diveDirection * divePower.x;
                 timeSinceDive = 0;
@@ -462,6 +474,7 @@ public class PlayerMovement : NetworkBehaviour
             else if (attemptingDive && !diving && timeSinceJump <= chainActionBuffer && timeSinceOnGround <= chainActionBuffer + coyoteTime)
             {
                 // If you pressed dive and you just jumped off the ground, apply dive force.
+                playerAnimator.AnimateDive(true);
                 verticalVelocity += jumpDivePower.y - jumpPower;
                 diveVelocity += diveDirection * divePower.x;
                 timeSinceDive = 0;

@@ -9,11 +9,17 @@ public class PlayerAnimator : NetworkBehaviour
 
     private Animator bodyAnimator;
     private Animator armAnimator;
+    int isRunningHash;
+    int isDivingHash;
+    int jumpHash;
 
     void Awake()
     {
         bodyAnimator = playerBody.GetComponent<Animator>();
         armAnimator = playerArms.GetComponent<Animator>();
+        isRunningHash = Animator.StringToHash("isRunning");
+        isDivingHash = Animator.StringToHash("isDiving");
+        jumpHash = Animator.StringToHash("jump");
     }
 
     public override void OnStartClient()
@@ -22,6 +28,7 @@ public class PlayerAnimator : NetworkBehaviour
         if (base.IsOwner)
         {
             playerBodyMesh.SetActive(false);
+            ToggleView(false);
         }
         else
         {
@@ -38,5 +45,20 @@ public class PlayerAnimator : NetworkBehaviour
     {
         playerBodyMesh.SetActive(!firstPerson);
         playerArms.SetActive(firstPerson);
+    }
+
+    public void AnimateRun(bool run)
+    {
+        bodyAnimator.SetBool(isRunningHash, run);
+    }
+
+    public void AnimateDive(bool dive)
+    {
+        bodyAnimator.SetBool(isDivingHash, dive);
+    }
+
+    public void Jump()
+    {
+        bodyAnimator.SetTrigger(jumpHash);
     }
 }
