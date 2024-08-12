@@ -40,16 +40,16 @@ public class PlayerMovement : NetworkBehaviour
 
     [SerializeField] private float ragdollControlSpeed = 5f;
 
-    [SerializeField] private float diveAngleSpeed = 10f;
+    [SerializeField] private float diveAngleSpeed = 200f;
     [SerializeField] private float maxDiveAngle = 90f;
     [SerializeField] private float maxDiveCameraAngle = 45f;
     [SerializeField] private float armLength = 1.5f;
-    [SerializeField] private float fadeArmLength = 1f;
+    [SerializeField] private float fadeArmLength = 1.4f;
 
     [SerializeField] private float anchorOffset = -1.5f;
     [SerializeField] private float fullHeight = 2f;
     [SerializeField] private float tuckedHeight = 1f;
-    [SerializeField] private float standupSpeed = 0.5f;
+    [SerializeField] private float standupSpeed = 3f;
 
     [SerializeField] private int maxBounces = 5;
 
